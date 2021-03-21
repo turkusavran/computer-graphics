@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+#define  GL_SILENCE_DEPRECATION
 
 #include "Angel.h"
 

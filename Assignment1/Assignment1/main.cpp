@@ -27,7 +27,7 @@ int objectType = 1;
 // MARK: - Cube
 
 const int NumVerticesCube = 36;
-point4 points[NumVerticesCube];
+point4 pointsCube[NumVerticesCube];
 color4 colors[NumVerticesCube];
 
 // Vertices of a unit cube
@@ -67,12 +67,12 @@ GLuint vao[3];
 // quad generates two triangles for each face
 int Index = 0;
 void quad( int a, int b, int c, int d ) {
-    points[Index] = vertices[a]; Index++;
-    points[Index] = vertices[b]; Index++;
-    points[Index] = vertices[c]; Index++;
-    points[Index] = vertices[a]; Index++;
-    points[Index] = vertices[c]; Index++;
-    points[Index] = vertices[d]; Index++;
+    pointsCube[Index] = vertices[a]; Index++;
+    pointsCube[Index] = vertices[b]; Index++;
+    pointsCube[Index] = vertices[c]; Index++;
+    pointsCube[Index] = vertices[a]; Index++;
+    pointsCube[Index] = vertices[c]; Index++;
+    pointsCube[Index] = vertices[d]; Index++;
 }
 
 // generate 12 triangles: 36 vertices
@@ -146,8 +146,7 @@ void tetrahedron( int count ) {
 // MARK: -  Bunny
 
 const int NumVerticesBunny = 9840 * 3; // (number of triangles in bunny.off) * 3
-point4 bunnyPoints[NumVerticesBunny];
-GLfloat bunnyScale;
+point4 pointsBunny[NumVerticesBunny];
 
 void bunny() {
     std::ifstream bunnyFile("bunny.off");
@@ -163,27 +162,19 @@ void bunny() {
         >> numTris            // 9840
         >> dump;            // don't need number of edges
 
-    GLfloat maxDim = -10000;
     GLfloat x = 0, y = 0, z = 0;
     for (int i = 0; i < numVerts; i++) {
         bunnyFile >> x >> y >> z;
-        vertices[i] = point4(x, y, z, 1.0);
-
-        // finding the maximum dimension for scaling
-        maxDim = fmax(abs(x), maxDim);
-        maxDim = fmax(abs(y), maxDim);
-        maxDim = fmax(abs(z), maxDim);
+        vertices[i] = point4(x*0.1, y*0.1, z*0.1, 1.0);
     }
-    bunnyScale = 1.0 / maxDim;    // to "normalize" bunny while viewing
-    bunnyScale *= 4;
-
+   
     int v1 = 0, v2 = 0, v3 = 0;
     for (int i = 0; i < numTris; i++) {
         // we know there are only triangles in the model
         bunnyFile >> dump >> v1 >> v2 >> v3;
-        bunnyPoints[3*i] = vertices[v1];
-        bunnyPoints[3*i + 1] = vertices[v2];
-        bunnyPoints[3*i + 2] = vertices[v3];
+        pointsBunny[3*i] = vertices[v1];
+        pointsBunny[3*i + 1] = vertices[v2];
+        pointsBunny[3*i + 2] = vertices[v3];
     }
 }
 
@@ -201,9 +192,9 @@ void init() {
     GLuint buffer1;
     glGenBuffers( 1, &buffer1 );
     glBindBuffer( GL_ARRAY_BUFFER, buffer1 );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(points) + sizeof(colors), NULL, GL_STATIC_DRAW );
-    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(points), points );
-    glBufferSubData( GL_ARRAY_BUFFER, sizeof(points), sizeof(colors), colors );
+    glBufferData( GL_ARRAY_BUFFER, sizeof(pointsCube) + sizeof(colors), NULL, GL_STATIC_DRAW );
+    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(pointsCube), pointsCube );
+    glBufferSubData( GL_ARRAY_BUFFER, sizeof(pointsCube), sizeof(colors), colors );
     
     // Create a vertex array object
     glGenVertexArrays( 3, vao);
@@ -238,9 +229,9 @@ void init() {
     GLuint buffer3;
     glGenBuffers( 3, &buffer3 );
     glBindBuffer( GL_ARRAY_BUFFER, buffer3 );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(bunnyPoints) + sizeof(colors), NULL, GL_STATIC_DRAW );
-    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(bunnyPoints), bunnyPoints );
-    glBufferSubData( GL_ARRAY_BUFFER, sizeof(bunnyPoints), sizeof(colors), colors );
+    glBufferData( GL_ARRAY_BUFFER, sizeof(pointsBunny) + sizeof(colors), NULL, GL_STATIC_DRAW );
+    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(pointsBunny), pointsBunny );
+    glBufferSubData( GL_ARRAY_BUFFER, sizeof(pointsBunny), sizeof(colors), colors );
    
     // Set up vertex arrays
     glEnableVertexAttribArray( vPosition );

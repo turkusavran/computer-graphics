@@ -4,6 +4,7 @@
 #include "Angel.h"
 #include <iostream>
 #include <fstream>
+#include <stdio.h>
 
 typedef vec4 color4;
 typedef vec4 point4;
@@ -11,15 +12,15 @@ typedef vec4 point4;
 //Update the xPosition and yPosition according to velocities.
 //initial positions and variables
 float initvalue = 2;
-float x_pos = -initvalue;
-float y_pos = initvalue;
+float x_pos = -2;
+float y_pos = 2;
 float gravity = 0.0009;
 const float friction = 0.009;
 float v_x = 0.005;
 float v_y = 0;
 
 //pink
-int ColorChoose = 7;
+int selectedColor = 7;
 // initial type is sphere
 int objectType = 1;
 
@@ -29,16 +30,16 @@ const int NumVerticesCube = 36;
 point4 points[NumVerticesCube];
 color4 colors[NumVerticesCube];
 
-// Vertices of a unit cube centered at origin, sides aligned with axes
+// Vertices of a unit cube
 point4 vertices[8] = {
-    point4( -0.5, -0.5,  0.5, 1.0 ),
-    point4( -0.5,  0.5,  0.5, 1.0 ),
-    point4(  0.5,  0.5,  0.5, 1.0 ),
-    point4(  0.5, -0.5,  0.5, 1.0 ),
-    point4( -0.5, -0.5, -0.5, 1.0 ),
-    point4( -0.5,  0.5, -0.5, 1.0 ),
-    point4(  0.5,  0.5, -0.5, 1.0 ),
-    point4(  0.5, -0.5, -0.5, 1.0 )
+    point4( -0.6, -0.6,  0.6, 1.0 ),
+    point4( -0.6,  0.6,  0.6, 1.0 ),
+    point4(  0.6,  0.6,  0.6, 1.0 ),
+    point4(  0.6, -0.6,  0.6, 1.0 ),
+    point4( -0.6, -0.6, -0.6, 1.0 ),
+    point4( -0.6,  0.6, -0.6, 1.0 ),
+    point4(  0.6,  0.6, -0.6, 1.0 ),
+    point4(  0.6, -0.6, -0.6, 1.0 )
 };
 
 // RGBA colors
@@ -55,11 +56,12 @@ color4 vertex_colors[8] = {
 
 // Array of rotation angles (in degrees) for each coordinate axis
 enum { Xaxis = 0, Yaxis = 1, Zaxis = 2, NumAxes = 3 };
-int  Axis = Xaxis;
+int Axis = Xaxis;
+
 GLfloat Theta[NumAxes] = { 0.0, 0.0, 0.0 };
 
 // Model-view, projection and color matrices uniform location
-GLuint ModelView, Projection, ColorChange;
+GLuint ModelView, Projection, Color;
 GLuint vao[3];
 
 // quad generates two triangles for each face
@@ -141,7 +143,8 @@ void tetrahedron( int count ) {
     divide_triangle( v[0], v[2], v[3], count );
 }
 
-// MARK: BUNNY
+// MARK: -  Bunny
+
 const int NumVerticesBunny = 9840 * 3; // (number of triangles in bunny.off) * 3
 point4 bunnyPoints[NumVerticesBunny];
 GLfloat bunnyScale;
@@ -187,8 +190,9 @@ void bunny() {
 // MARK: - Initialization
 
 void init() {
-    //shaders
+    // Load shaders and use the resulting shader program
     GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
+    glUseProgram( program );
     
     // MARK: Cube Init
     cube();
@@ -225,12 +229,8 @@ void init() {
     // Set up vertex arrays
     glEnableVertexAttribArray( vPosition );
     glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
-    GLuint vNormal = glGetAttribLocation( program, "vNormal" );
-        glEnableVertexAttribArray( vNormal );
-        glVertexAttribPointer( vNormal, 3, GL_FLOAT, GL_FALSE, 0,
-                BUFFER_OFFSET(sizeof(pointsSphere)) );
-    
-    // TODO: Bunny Init
+
+    // MARK: Bunny Init
     bunny();
     glBindVertexArray( vao[2] );
     
@@ -238,9 +238,9 @@ void init() {
     GLuint buffer3;
     glGenBuffers( 3, &buffer3 );
     glBindBuffer( GL_ARRAY_BUFFER, buffer3 );
-    glBufferData( GL_ARRAY_BUFFER, sizeof(points) + sizeof(colors), NULL, GL_STATIC_DRAW );
-    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(points), points );
-    glBufferSubData( GL_ARRAY_BUFFER, sizeof(points), sizeof(colors), colors );
+    glBufferData( GL_ARRAY_BUFFER, sizeof(bunnyPoints) + sizeof(colors), NULL, GL_STATIC_DRAW );
+    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(bunnyPoints), bunnyPoints );
+    glBufferSubData( GL_ARRAY_BUFFER, sizeof(bunnyPoints), sizeof(colors), colors );
    
     // Set up vertex arrays
     glEnableVertexAttribArray( vPosition );
@@ -249,10 +249,8 @@ void init() {
     // Retrieve transformation uniform variable locations
     ModelView = glGetUniformLocation( program, "ModelView" );
     Projection = glGetUniformLocation( program, "Projection" );
-    ColorChange = glGetUniformLocation( program, "ColorChange" );
+    Color = glGetUniformLocation( program, "Color" );
     
-    
-    glUseProgram( program );
     glEnable( GL_DEPTH_TEST );
     glClearColor( 1.0, 1.0, 1.0, 1.0 ); // white background
 }
@@ -264,14 +262,15 @@ int numVertices[3] = { NumVerticesCube, NumVerticesSphere, NumVerticesBunny };
 void display( void ) {
     glBindVertexArray( vao[objectType] );
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    mat4 model_view;
     
     vec3 displacement( x_pos, y_pos, 0.0 );
-    
-    model_view = ( Scale(0.25, 0.25, 0.25) * Translate( displacement ) * RotateX( Theta[Xaxis] ) );
-    
-    //sets the color
-    glUniform4fv( ColorChange, 1, vertex_colors[ColorChoose] );
+    mat4  model_view = ( Scale(0.2, 0.2, 0.2) *
+                        Translate( displacement ) *
+                        RotateX( Theta[Xaxis] ) *
+                        RotateY( Theta[Yaxis] ) *
+                        RotateZ( Theta[Zaxis] ) );
+
+    glUniform4fv( Color, 1, vertex_colors[selectedColor] );
     glUniformMatrix4fv( ModelView, 1, GL_TRUE, model_view );
     glDrawArrays( GL_TRIANGLES, 0, numVertices[objectType] );
     glutSwapBuffers();
@@ -279,15 +278,16 @@ void display( void ) {
 
 // MARK: - Reshape
 
-void reshape( int w, int h ) {
-    glViewport( 0, 0, w, h );
+void reshape( int width, int height ) {
+    glViewport( 0, 0, width, height );
     
     // Set the projection matrix
     mat4  projection;
-    if (w <= h) {
-        projection = Ortho(-1.0, 1.0, -1.0 * ((GLfloat)h/(GLfloat)w), 1.0 * ((GLfloat)h/(GLfloat)w), -1.0, 1.0);
+    
+    if (width <= height) {
+        projection = Ortho(-1.0, 1.0, -1.0 * ((GLfloat)height/width), 1.0 * ((GLfloat)height/width), -1.0, 1.0);
     } else {
-        projection = Ortho(-1.0* ((GLfloat)w/(GLfloat)h), 1.0 *((GLfloat)w/(GLfloat)h), -1.0, 1.0, -1.0, 1.0);
+        projection = Ortho(-1.0 * ((GLfloat)width/height), 1.0 * ((GLfloat)width/height), -1.0, 1.0, -1.0, 1.0);
     }
     
     glUniformMatrix4fv( Projection, 1, GL_TRUE, projection );
@@ -295,35 +295,17 @@ void reshape( int w, int h ) {
     glutSwapBuffers();
 }
 
-// MARK: - Keyboard
+// MARK: - Idle
 
-void keyboard( unsigned char key, int x, int y ) {
-    if (key == 'Q' | key == 'q')
-        exit(0);
+void idle ( void ) {
+    // rotation
+    Theta[Axis] += 1.5;
     
-    if (key == 'I' | key == 'i') {
-        //reset to initial state
-        x_pos = -initvalue;
-        v_x = 0.003;
-        y_pos = initvalue;
-        v_y = 0;
-        gravity = 0.0009;
+    if ( Theta[Axis] > 360.0 ) {
+        Theta[Axis] -= 360.0;
     }
     
-    if (key == 'h' | key == 'H') {
-        // help menu
-        std::cout<< " The Amazing Bouncing Cube/Sphere"<<std::endl;
-        std::cout<< " Choose the object type, fill style and color"<<std::endl;
-        std::cout<< " -Press Q to exit" << std::endl;
-        std::cout<< " -Press I to reset" << std::endl;
-        std::cout<< " -Press H to get help" <<std::endl;
-        std::cout<< " -Press left mouse button to reach menu" <<std::endl;
-    }
-}
-
-// MARK: - Timer
-
-void timer( int t ) {
+    // bouncing
     x_pos += v_x;
     
     if (y_pos<-(2*initvalue)) {
@@ -339,20 +321,13 @@ void timer( int t ) {
     v_y -= gravity;
     y_pos += v_y;
     
-    // trying to rotate
-    Theta[Axis] += 2.0;
-    if ( Theta[Axis] > 360.0 ) {
-        Theta[Axis] -= 360.0;
-    }
-    
     glutPostRedisplay();
-    glutTimerFunc( 5, timer, 0 );
 }
 
 // MARK: - Menu
 
 void color_menu( int n ) {
-    ColorChoose = n;
+    selectedColor = n;
 }
 
 void object_menu( int n ) {
@@ -369,21 +344,44 @@ void drawing_menu( int n ) {
 
 void mainMenu( int n ){}
 
+// MARK: - Keyboard
+
+void keyboard( unsigned char key, int x, int y ) {
+    switch( key ) {
+        case 'q': case 'Q':
+            exit(0);
+        case 'i': case 'I':
+            x_pos = -initvalue;
+            v_x = 0.003;
+            y_pos = initvalue;
+            v_y = 0;
+            gravity = 0.0009;
+        case 'h': case 'H':
+            std::cout<< " The Amazing Bouncing Cube/Sphere"<<std::endl;
+            std::cout<< " Choose the object type, fill style and color"<<std::endl;
+            std::cout<< " - Press Q to exit" << std::endl;
+            std::cout<< " - Press I to reset" << std::endl;
+            std::cout<< " - Press H to get help" <<std::endl;
+            std::cout<< " - Press left mouse button to reach menu" <<std::endl;
+            break;
+    }
+}
+
 // MARK: - Main
 
 int main( int argc, char **argv ) {
     glutInit( &argc, argv );
     glutInitDisplayMode(  GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH | GLUT_3_2_CORE_PROFILE);
-    glutInitWindowSize( 512, 780 );
+    glutInitWindowSize( 780, 780 );
     glutInitWindowPosition( 100, 100 );
     glutCreateWindow( "COMP410 Assingment 1" );
     init();
     
     glutDisplayFunc( display );
-    glutReshapeFunc( reshape );
     glutKeyboardFunc( keyboard );
-    glutTimerFunc( 5, timer, 0 );
-    
+    glutIdleFunc( idle );
+    glutReshapeFunc( reshape );
+   
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     
     int objectMenu = glutCreateMenu( object_menu );

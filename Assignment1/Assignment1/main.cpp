@@ -88,8 +88,8 @@ void cube() {
 // MARK: - Sphere
 
 const int NumTimesToSubdivide = 5;
-const int NumTriangles = 4096;
-const int NumVerticesSphere = 3 * NumTriangles;
+const int NumTrianglesSphere = 4096;
+const int NumVerticesSphere = 3 * NumTrianglesSphere;
 
 point4 pointsSphere[NumVerticesSphere];
 vec3 normals[NumVerticesSphere];
@@ -145,33 +145,32 @@ void tetrahedron( int count ) {
 
 // MARK: -  Bunny
 
-const int NumVerticesBunny = 9840 * 3; // (number of triangles in bunny.off) * 3
+const int NumVerticesBunny = 9840 * 3;
 point4 pointsBunny[NumVerticesBunny];
 
 void bunny() {
     std::ifstream bunnyFile("bunny.off");
             
-    GLuint numTris = 0, numVerts = 0;
+    GLuint numTrianglesTemp = 0, numVerticesTemp = 0;
     point4 vertices[4922];
 
-    std::string dump = "";        // dummy string to dump unneeded data
+    std::string temp = "";
 
-    bunnyFile >> dump;        // OFF
-    bunnyFile
-        >> numVerts            // 4922
-        >> numTris            // 9840
-        >> dump;            // don't need number of edges
+    bunnyFile >> temp;
+    bunnyFile >> numVerticesTemp
+              >> numTrianglesTemp
+              >> temp;
 
     GLfloat x = 0, y = 0, z = 0;
-    for (int i = 0; i < numVerts; i++) {
+    for (int i = 0; i < numVerticesTemp; i++) {
         bunnyFile >> x >> y >> z;
         vertices[i] = point4(x*0.1, y*0.1, z*0.1, 1.0);
     }
    
     int v1 = 0, v2 = 0, v3 = 0;
-    for (int i = 0; i < numTris; i++) {
+    for (int i = 0; i < numTrianglesTemp; i++) {
         // we know there are only triangles in the model
-        bunnyFile >> dump >> v1 >> v2 >> v3;
+        bunnyFile >> temp >> v1 >> v2 >> v3;
         pointsBunny[3*i] = vertices[v1];
         pointsBunny[3*i + 1] = vertices[v2];
         pointsBunny[3*i + 2] = vertices[v3];

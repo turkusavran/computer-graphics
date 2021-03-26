@@ -1,4 +1,4 @@
-//assignment1 - sitare arslanturk 
+//assignment1 - turku savran
 #define GL_SILENCE_DEPRECATION
 
 #include "Angel.h"
@@ -19,8 +19,8 @@ const float friction = 0.009;
 float v_x = 0.005;
 float v_y = 0;
 
-//pink
-int selectedColor = 7;
+// initical color is red
+int selectedColor = 1;
 // initial type is sphere
 int objectType = 1;
 

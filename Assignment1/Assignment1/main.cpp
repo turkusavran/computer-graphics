@@ -1,4 +1,4 @@
-//assignment1 - turku savran
+// Assignment1 - Türkü Bengisu Savran - 64145
 #define GL_SILENCE_DEPRECATION
 
 #include "Angel.h"
@@ -9,19 +9,19 @@
 typedef vec4 color4;
 typedef vec4 point4;
 
-//Update the xPosition and yPosition according to velocities.
-//initial positions and variables
+// Update the xPosition and yPosition according to velocities.
+// initial positions, speeds and variables
 float initvalue = 2;
-float x_pos = -2;
-float y_pos = 2;
+float x_pos = -(initvalue+2);
+float y_pos = initvalue;
 float gravity = 0.0009;
 const float friction = 0.009;
-float v_x = 0.005;
+float v_x = 0.008;
 float v_y = 0;
 
-// initical color is red
+// set initial color to red
 int selectedColor = 1;
-// initial type is sphere
+// set initial type to sphere
 int objectType = 1;
 
 // MARK: - Cube
@@ -31,7 +31,7 @@ point4 pointsCube[NumVerticesCube];
 color4 colors[NumVerticesCube];
 
 // Vertices of a unit cube
-point4 vertices[8] = {
+point4 verticesCube[8] = {
     point4( -0.6, -0.6,  0.6, 1.0 ),
     point4( -0.6,  0.6,  0.6, 1.0 ),
     point4(  0.6,  0.6,  0.6, 1.0 ),
@@ -67,12 +67,12 @@ GLuint vao[3];
 // quad generates two triangles for each face
 int Index = 0;
 void quad( int a, int b, int c, int d ) {
-    pointsCube[Index] = vertices[a]; Index++;
-    pointsCube[Index] = vertices[b]; Index++;
-    pointsCube[Index] = vertices[c]; Index++;
-    pointsCube[Index] = vertices[a]; Index++;
-    pointsCube[Index] = vertices[c]; Index++;
-    pointsCube[Index] = vertices[d]; Index++;
+    pointsCube[Index] = verticesCube[a]; Index++;
+    pointsCube[Index] = verticesCube[b]; Index++;
+    pointsCube[Index] = verticesCube[c]; Index++;
+    pointsCube[Index] = verticesCube[a]; Index++;
+    pointsCube[Index] = verticesCube[c]; Index++;
+    pointsCube[Index] = verticesCube[d]; Index++;
 }
 
 // generate 12 triangles: 36 vertices
@@ -130,7 +130,7 @@ void divide_triangle( const point4& a, const point4& b,
     }
 }
 
-void tetrahedron( int count ) {
+void sphere( int count ) {
     point4 v[4] = {
         vec4( 0.0, 0.0, 1.0, 1.0 ),
         vec4( 0.0, 0.942809, -0.33333, 1.0 ),
@@ -150,32 +150,36 @@ point4 pointsBunny[NumVerticesBunny];
 
 void bunny() {
     std::ifstream bunnyFile("bunny.off");
-            
+    
     GLuint numTrianglesTemp = 0, numVerticesTemp = 0;
-    point4 vertices[4922];
-
-    std::string temp = "";
-
-    bunnyFile >> temp;
-    bunnyFile >> numVerticesTemp
-              >> numTrianglesTemp
-              >> temp;
-
+    point4 verticesBunny[4922];
+    
+    // read the numbers
+    std::string temp;
+    bunnyFile >> temp
+    >> numVerticesTemp
+    >> numTrianglesTemp
+    >> temp;
+    
+    // vertices of the bunny
     GLfloat x = 0, y = 0, z = 0;
     for (int i = 0; i < numVerticesTemp; i++) {
         bunnyFile >> x >> y >> z;
-        vertices[i] = point4(x*0.1, y*0.1, z*0.1, 1.0);
+        verticesBunny[i] = point4( x*0.1, y*0.1, z*0.1, 1.0 );
     }
-   
+    
+    // generate triangles
     int v1 = 0, v2 = 0, v3 = 0;
     for (int i = 0; i < numTrianglesTemp; i++) {
-        // we know there are only triangles in the model
         bunnyFile >> temp >> v1 >> v2 >> v3;
-        pointsBunny[3*i] = vertices[v1];
-        pointsBunny[3*i + 1] = vertices[v2];
-        pointsBunny[3*i + 2] = vertices[v3];
+        pointsBunny[ 3*i ] = verticesBunny[v1];
+        pointsBunny[ 3*i + 1 ] = verticesBunny[v2];
+        pointsBunny[ 3*i + 2 ] = verticesBunny[v3];
     }
 }
+
+// number of vertices
+int numVertices[3] = { NumVerticesCube, NumVerticesSphere, NumVerticesBunny };
 
 // MARK: - Initialization
 
@@ -187,7 +191,7 @@ void init() {
     // MARK: Cube Init
     cube();
     
-    // Create and initialize a buffer object
+    // Create and initialize a buffer object for cube
     GLuint buffer1;
     glGenBuffers( 1, &buffer1 );
     glBindBuffer( GL_ARRAY_BUFFER, buffer1 );
@@ -203,12 +207,12 @@ void init() {
     GLuint vPosition = glGetAttribLocation( program, "vPosition" );
     glEnableVertexAttribArray( vPosition );
     glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
-     
+    
     // MARK: Sphere Init
-    tetrahedron( NumTimesToSubdivide );
+    sphere( NumTimesToSubdivide );
     glBindVertexArray( vao[1] );
     
-    // Create and initialize a buffer object with different name
+    // Create and initialize a buffer object for sphere
     GLuint buffer2;
     glGenBuffers( 1, &buffer2 );
     glBindBuffer( GL_ARRAY_BUFFER, buffer2 );
@@ -219,19 +223,19 @@ void init() {
     // Set up vertex arrays
     glEnableVertexAttribArray( vPosition );
     glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
-
+    
     // MARK: Bunny Init
     bunny();
     glBindVertexArray( vao[2] );
     
-    // Create and initialize a buffer object with different name
+    // Create and initialize a buffer object for bunny
     GLuint buffer3;
     glGenBuffers( 3, &buffer3 );
     glBindBuffer( GL_ARRAY_BUFFER, buffer3 );
     glBufferData( GL_ARRAY_BUFFER, sizeof(pointsBunny) + sizeof(colors), NULL, GL_STATIC_DRAW );
     glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(pointsBunny), pointsBunny );
     glBufferSubData( GL_ARRAY_BUFFER, sizeof(pointsBunny), sizeof(colors), colors );
-   
+    
     // Set up vertex arrays
     glEnableVertexAttribArray( vPosition );
     glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
@@ -245,13 +249,34 @@ void init() {
     glClearColor( 1.0, 1.0, 1.0, 1.0 ); // white background
 }
 
-int numVertices[3] = { NumVerticesCube, NumVerticesSphere, NumVerticesBunny };
+
+
+// MARK: - Bounce
+
+void bounce( void ) {
+    // move
+    x_pos += v_x;
+    v_y -= gravity;
+    y_pos += v_y;
+    
+    // bounce
+    if (y_pos < -(2*initvalue)) {
+        v_y *= -1;
+        v_y -= friction;
+        if (v_y < 0) {
+            gravity = 0;
+            v_y = 0;
+            v_x = 0;
+        }
+    }
+}
 
 // MARK: - Display
 
 void display( void ) {
     glBindVertexArray( vao[objectType] );
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    bounce();
     
     vec3 displacement( x_pos, y_pos, 0.0 );
     mat4  model_view = ( Scale(0.2, 0.2, 0.2) *
@@ -259,7 +284,7 @@ void display( void ) {
                         RotateX( Theta[Xaxis] ) *
                         RotateY( Theta[Yaxis] ) *
                         RotateZ( Theta[Zaxis] ) );
-
+    
     glUniform4fv( Color, 1, vertex_colors[selectedColor] );
     glUniformMatrix4fv( ModelView, 1, GL_TRUE, model_view );
     glDrawArrays( GL_TRIANGLES, 0, numVertices[objectType] );
@@ -281,7 +306,6 @@ void reshape( int width, int height ) {
     }
     
     glUniformMatrix4fv( Projection, 1, GL_TRUE, projection );
-    glDrawArrays( GL_TRIANGLES, 0, numVertices[objectType] );
     glutSwapBuffers();
 }
 
@@ -289,36 +313,18 @@ void reshape( int width, int height ) {
 
 void idle ( void ) {
     // rotation
-    Theta[Axis] += 1.5;
+    Theta[Axis] += 2;
     
-    if ( Theta[Axis] > 360.0 ) {
-        Theta[Axis] -= 360.0;
+    if ( Theta[Axis] >= 360.0 ) {
+        Theta[Axis] = 0.0;
     }
-    
-    // bouncing
-    x_pos += v_x;
-    
-    if (y_pos<-(2*initvalue)) {
-        v_y *= -1;
-        v_y -= friction;
-        if(v_y < 0){
-            gravity = 0;
-            v_y = 0;
-            v_x = 0;
-        }
-    }
-    
-    v_y -= gravity;
-    y_pos += v_y;
     
     glutPostRedisplay();
 }
 
 // MARK: - Menu
 
-void color_menu( int n ) {
-    selectedColor = n;
-}
+void mainMenu( int n ) {}
 
 void object_menu( int n ) {
     objectType = n;
@@ -332,7 +338,9 @@ void drawing_menu( int n ) {
     }
 }
 
-void mainMenu( int n ){}
+void color_menu( int n ) {
+    selectedColor = n;
+}
 
 // MARK: - Keyboard
 
@@ -341,7 +349,7 @@ void keyboard( unsigned char key, int x, int y ) {
         case 'q': case 'Q':
             exit(0);
         case 'i': case 'I':
-            x_pos = -initvalue;
+            x_pos = -(initvalue+2);
             v_x = 0.003;
             y_pos = initvalue;
             v_y = 0;
@@ -362,16 +370,23 @@ void keyboard( unsigned char key, int x, int y ) {
 int main( int argc, char **argv ) {
     glutInit( &argc, argv );
     glutInitDisplayMode(  GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH | GLUT_3_2_CORE_PROFILE);
-    glutInitWindowSize( 780, 780 );
+    glutInitWindowSize( 900, 720 );
     glutInitWindowPosition( 100, 100 );
     glutCreateWindow( "COMP410 Assingment 1" );
+    
+    #ifdef __APPLE__
+    #else // non-Mac OS X operating systems
+    #   glewExperimental = GL_TRUE;
+    #   glewInit();
+    #endif
+    
     init();
     
     glutDisplayFunc( display );
     glutKeyboardFunc( keyboard );
     glutIdleFunc( idle );
     glutReshapeFunc( reshape );
-   
+    
     glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     
     int objectMenu = glutCreateMenu( object_menu );
@@ -380,7 +395,7 @@ int main( int argc, char **argv ) {
     glutAddMenuEntry("Bunny", 2);
     
     int drawingMenu = glutCreateMenu( drawing_menu );
-    glutAddMenuEntry("Line Mode", 0);
+    glutAddMenuEntry("Wirefame Mode", 0);
     glutAddMenuEntry("Solid Mode", 1);
     
     int colorMenu = glutCreateMenu( color_menu );

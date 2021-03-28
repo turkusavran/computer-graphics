@@ -350,17 +350,16 @@ void keyboard( unsigned char key, int x, int y ) {
             exit(0);
         case 'i': case 'I':
             x_pos = -(initvalue+2);
-            v_x = 0.003;
+            v_x = 0.008;
             y_pos = initvalue;
             v_y = 0;
             gravity = 0.0009;
         case 'h': case 'H':
-            std::cout<< " The Amazing Bouncing Cube/Sphere"<<std::endl;
-            std::cout<< " Choose the object type, fill style and color"<<std::endl;
+            std::cout<< " Choose the object type, filling style and color"<<std::endl;
             std::cout<< " - Press Q to exit" << std::endl;
             std::cout<< " - Press I to reset" << std::endl;
-            std::cout<< " - Press H to get help" <<std::endl;
-            std::cout<< " - Press left mouse button to reach menu" <<std::endl;
+            std::cout<< " - Press H for help" << std::endl;
+            std::cout<< " - Left click to reach the menu" <<std::endl;
             break;
     }
 }

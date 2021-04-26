@@ -7,36 +7,17 @@
 
 using namespace std;
 
-/* CubeHistory is the class that stores the 
-   state of the cube at any point. This helps in
-   accessing the history moves made to the Rubik's Cube.
-*/
-class CubeHistory {
-	public:
-		int Axis;
-		int SubCube;
-		int RotationDirection;
-		CubeHistory(int A, int B, int C) {
-			SubCube = A;
-			Axis = B;
-			RotationDirection = C;
-		}
-};
-
 typedef Angel::vec4  color4;
 typedef Angel::vec4  point4;
 
 // Rubik's Cube specifications
-const int numCubes = 27;
+const int numCubes = 8;
 const int cubeFaces = 6;
 const int faceVertices = 6;
 const int numCubeVertices = faceVertices*cubeFaces*numCubes;
 
 // Animation Speed */
 const int animationSpeed = 10;
-
-// Vector to store the history of moves
-vector<CubeHistory> cubeMoves;   
 
 // Default position of the cube
 double rotateX = 135.0;
@@ -53,8 +34,8 @@ point4 vertices[numCubeVertices];
 
 
 // Cube position
-int currCubePos[3][3][3];
-int futureCubePos[3][3][3];
+int currCubePos[2][2][2];
+int futureCubePos[2][2][2];
 
 // Cube rotation-level variables; specify the current orientation of the cube
 int rotationAxis = axisY; 

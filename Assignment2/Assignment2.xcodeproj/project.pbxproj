@@ -31,7 +31,6 @@
 
 /* Begin PBXFileReference section */
 		9110468A2634BC2E00D9C908 /* main.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = main.h; sourceTree = "<group>"; };
-		9166C0C12634CE7200EDED19 /* libGlew.2.2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libGlew.2.2.0.dylib; path = "../../Library/Developer/Xcode/DerivedData/selin-hw1-dgydrcpzvltmwxeqolykgpsmpjhe/Build/Products/Release/libGlew.2.2.0.dylib"; sourceTree = "<group>"; };
 		9171E46426026F4D00405F6F /* Assignment2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Assignment2; sourceTree = BUILT_PRODUCTS_DIR; };
 		91ADDDC22603F0A100ED2BAE /* vshader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = vshader.glsl; sourceTree = "<group>"; };
 		91ADDDC32603F0A100ED2BAE /* fshader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = fshader.glsl; sourceTree = "<group>"; };
@@ -92,7 +91,6 @@
 		91EF07BE2602766500A03DAC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				9166C0C12634CE7200EDED19 /* libGlew.2.2.0.dylib */,
 				91EF07C12602766A00A03DAC /* OpenGL.framework */,
 				91EF07BF2602766500A03DAC /* GLUT.framework */,
 			);

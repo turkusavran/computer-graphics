@@ -11,16 +11,13 @@ void helpMenu( ) {
     printf("  1. Press Up or Down arrow keys to rotate the Rubik's cube horizontally\n");
     printf("  2. Press Left or Right arrow keys to rotate the Rubik's cube vertically\n\n");
     printf("Click to move the slabs of the cube to change configuration:\n");
-    printf("  1. For vertical slab rotation, perform a right-click\n");
-    printf("  2. For horizontal slab rotation, perform a left-click\n");
+    printf("  1. For a vertical rotation, perform a right-click\n");
+    printf("  2. For a horizontal rotation, perform a left-click\n");
     printf("  -- Click on the corner sub-cube to perform slab rotation in that particular direction\n\n");
-    printf("Press p or P to revert the last rotation/move\n");
+    printf("Press r or R to randomize the Rubik's cube\n");
     printf("Press z or Z to zoom in (magnify) the Rubik's cube\n");
     printf("Press x or X to zoom out (shrink) the Rubik's cube\n");
     printf("Press i or I key to go to the initial position\n");
-    printf("Press b or B to change background color to Black\n");
-    printf("Press g or G to change background color to Gray\n");
-    printf("Press w or W to change background color to White\n");
     printf("Press h or H key for help\n");
     printf("Press q or Q key to exit application\n\n");
 }
@@ -125,8 +122,6 @@ void mouseAction( int key, int state, int x, int y ) {
           rotatePhase = 0;
           cubeSideRotation(5);
         }
-        /* Add move to history vector */
-          cubeMoves.push_back(CubeHistory(currentBlock, rotationAxis, direction));
     }
 }
 
@@ -152,20 +147,14 @@ void arrowKeysAction( int key, int a, int b ) {
 void keyboard( unsigned char key, int x, int y ) {
     if (key == 'i' | key == 'I') {
         initialState();
-    } else if (key == 'p' | key == 'P') {
-        previousMove();
+    } else if (key == 'r' | key == 'R'){
+        //randomInitialization(5);
     } else if (key == 'z' | key == 'Z') {
         scaleFactor += scaleFactor*0.1;
     } else if (key == 'x'| key == 'X') {
         scaleFactor -= scaleFactor*0.1;
     } else if (key == 'h'| key == 'H') {
         helpMenu();
-    } else if (key == 'g' | key == 'G') {
-        backgroundColor(2);
-    } else if (key == 'w' | key == 'W') {
-        backgroundColor(1);
-    } else if (key == 'b' | key == 'B') {
-        backgroundColor(0);
     } else if (key == 'q' | key == 'Q') {
         exit(0);
     }
@@ -178,32 +167,8 @@ void initialState() {
     rotateX = 135.0;
     rotateZ = -45.0;
     scaleFactor = 1.0;
-    backgroundColor(1);
 }
 
-// MARK: - Previous Move
-
-void previousMove() {
-    if (rotatePhase == 0) {
-        if (cubeMoves.size() == 0) {
-            cout << "No more previous moves in history vector" << endl;
-        } else {
-            CubeHistory history = cubeMoves.back();
-            cubeMoves.pop_back();
-            currentBlock = history.SubCube;
-            rotationAxis = history.Axis;
-            if (history.RotationDirection == -1) {
-                rubiksCubeRotation(-history.RotationDirection, currentBlock, rotationAxis);
-                rotatePhase = 0;
-                cubeSideRotation(5);
-            } else if (history.RotationDirection == 1) {
-                rubiksCubeRotation(-history.RotationDirection, currentBlock, rotationAxis);
-                rotatePhase = 180;
-                cubeSideRotation(-5);
-            }
-        }
-    }
-}
 
 // MARK: - Reshape
 
@@ -240,15 +205,15 @@ void rubiksCube() {
     point4 *cube = new point4[totalFaces];
     vec3 cubeDisplacement;
 
-    for (int i = -1 ; i <= 1 ; i++) {
+    for (int i = -1 ; i <= 0 ; i++) {
         green = 0.0;
         red += 0.25;
-        for (int j = -1 ; j <= 1 ; j++) {
+        for (int j = -1 ; j <= 0 ; j++) {
             blue = 0.0;
             green += 0.25;
-            for (int k = -1 ; k <= 1 ; k++) {
+            for (int k = -1 ; k <= 0 ; k++) {
                 cubeCreator( cube, color );
-                cubeDisplacement = vec3(i, j, k);
+                cubeDisplacement = vec3(i, 0, 0);
                 cubeTranslation( cube, cubeDisplacement );
                 for (int j = 0 ; j < totalFaces ; j++) {
                     vertices[(curr*(cubeFaces*faceVertices)) + j] = cube[j];
@@ -279,7 +244,6 @@ void randomInitialization( int numRotations ) {
             direction = -1;
         }
         rubiksCubeRotation( direction, currentBlock, rotationAxis );
-        cubeMoves.push_back( CubeHistory(currentBlock, rotationAxis, direction) );
         for (int i = 0 ; i < 3 ; i++) {
             for (int j = 0 ; j < 3 ; j++) {
                 if (rotationAxis == axisX) {
@@ -664,18 +628,6 @@ int cubeSelector( int a, int b, int key ) {
     glutPostRedisplay();
 
     return rotation;
-}
-
-// MARK: - Background Color
-
-void backgroundColor(int option) {
-    if (option == 0) {         // Black
-        glClearColor(0.0, 0.0, 0.0, 1.0);
-    } else if (option == 1) {  // White
-        glClearColor(1.0, 1.0, 1.0, 1.0);
-    } else if (option == 2) {  // Gray
-        glClearColor(0.5, 0.5, 0.5, 1.0);
-    }
 }
 
 // MARK: - Initialization

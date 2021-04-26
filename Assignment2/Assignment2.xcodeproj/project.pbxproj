@@ -11,6 +11,7 @@
 		9166C0AF2634CB2C00EDED19 /* vshader.glsl in CopyFiles */ = {isa = PBXBuildFile; fileRef = 91ADDDC22603F0A100ED2BAE /* vshader.glsl */; };
 		91ADDE00260779A900ED2BAE /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 91ADDDFE260779A900ED2BAE /* main.cpp */; };
 		91ADDE01260779A900ED2BAE /* InitShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 91ADDDFF260779A900ED2BAE /* InitShader.cpp */; };
+		91C3BB7E26364165006E0115 /* libGLEW.2.2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 91C3BB7D26364165006E0115 /* libGLEW.2.2.0.dylib */; };
 		91D9822E263616F70043E453 /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 91EF07BF2602766500A03DAC /* GLUT.framework */; };
 		91EF07C22602766A00A03DAC /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 91EF07C12602766A00A03DAC /* OpenGL.framework */; };
 /* End PBXBuildFile section */
@@ -39,6 +40,8 @@
 		91ADDDE42603F7FE00ED2BAE /* vec.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vec.h; sourceTree = "<group>"; };
 		91ADDDFE260779A900ED2BAE /* main.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		91ADDDFF260779A900ED2BAE /* InitShader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InitShader.cpp; sourceTree = "<group>"; };
+		91C3BB7D26364165006E0115 /* libGLEW.2.2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libGLEW.2.2.0.dylib; path = ../../../../../../usr/local/Cellar/glew/2.2.0_1/lib/libGLEW.2.2.0.dylib; sourceTree = "<group>"; };
+		91C3BB82263641AC006E0115 /* Assignment2.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Assignment2.entitlements; sourceTree = "<group>"; };
 		91EF07BF2602766500A03DAC /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 		91EF07C12602766A00A03DAC /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
@@ -49,6 +52,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				91D9822E263616F70043E453 /* GLUT.framework in Frameworks */,
+				91C3BB7E26364165006E0115 /* libGLEW.2.2.0.dylib in Frameworks */,
 				91EF07C22602766A00A03DAC /* OpenGL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -76,6 +80,7 @@
 		9171E46626026F4D00405F6F /* Assignment2 */ = {
 			isa = PBXGroup;
 			children = (
+				91C3BB82263641AC006E0115 /* Assignment2.entitlements */,
 				91ADDDC32603F0A100ED2BAE /* fshader.glsl */,
 				91ADDDC22603F0A100ED2BAE /* vshader.glsl */,
 				91ADDDE32603F7FE00ED2BAE /* mat.h */,
@@ -91,6 +96,7 @@
 		91EF07BE2602766500A03DAC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				91C3BB7D26364165006E0115 /* libGLEW.2.2.0.dylib */,
 				91EF07C12602766A00A03DAC /* OpenGL.framework */,
 				91EF07BF2602766500A03DAC /* GLUT.framework */,
 			);
@@ -287,7 +293,7 @@
 		9171E46C26026F4D00405F6F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_ENTITLEMENTS = Assignment2/Assignment2.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = HJ9V3YK2DV;
@@ -303,7 +309,7 @@
 		9171E46D26026F4D00405F6F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_ENTITLEMENTS = Assignment2/Assignment2.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = HJ9V3YK2DV;

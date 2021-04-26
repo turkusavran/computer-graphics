@@ -213,7 +213,7 @@ void rubiksCube() {
             green += 0.25;
             for (int k = -1 ; k <= 0 ; k++) {
                 cubeCreator( cube, color );
-                cubeDisplacement = vec3(i, 0, 0);
+                cubeDisplacement = vec3(i, j, k);
                 cubeTranslation( cube, cubeDisplacement );
                 for (int j = 0 ; j < totalFaces ; j++) {
                     vertices[(curr*(cubeFaces*faceVertices)) + j] = cube[j];

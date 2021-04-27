@@ -14,7 +14,8 @@ typedef Angel::vec4  point4;
 const int numCubes = 8;
 const int cubeFaces = 6;
 const int faceVertices = 6;
-const int numCubeVertices = faceVertices*cubeFaces*numCubes;
+const int numOneCubeVertices = faceVertices * cubeFaces;
+const int numCubeVertices = numOneCubeVertices * numCubes;
 
 // Animation Speed */
 const int animationSpeed = 10;
@@ -33,8 +34,8 @@ color4 colors[numCubeVertices];
 point4 vertices[numCubeVertices];
 
 // Cube position
-int currCubePos[2][2][2];
-int futureCubePos[2][2][2];
+int currentCubePos[2][2][2];
+int nextCubePos[2][2][2];
 
 // Cube rotation-level variables; specify the current orientation of the cube
 int rotationAxis = axisY; 
@@ -61,9 +62,6 @@ void cubeTranslation(point4 *cube, vec3 displacement);
 void rubiksCube(void);
 void randomInitialization(int numRotations);
 void rubiksCubeRotation(int direction, int block, int axis);
-void backgroundColor(int option);
-void initialState();
-void previousMove();
 
 // MARK: - Cube Vertices
 
@@ -140,12 +138,12 @@ void cubeCreator(point4 *cube, color4 *color) {
 	vertices[7] = point4(0.5, -0.5, -0.5, 1.0);
 
 	for (int i = 0 ; i < 6 ; i++) {
-		color[i] = color4(1.0,0.0,0.0,1.0);
-		color[i+6] = color4(1.0,1.0,0.0,1.0);
-		color[i+12] = color4(0.0,1.0,0.0,1.0);
-		color[i+18] = color4(0.0,1.0,1.0,1.0);
-		color[i+24] = color4(0.0,0.0,1.0,1.0);
-		color[i+30] = color4(1.0,0.0,1.0,1.0);
+		color[i] = color4(1.0,0.0,0.0,1.0);     // red
+		color[i+6] = color4(1.0,1.0,0.0,1.0);   // yellow
+		color[i+12] = color4(0.0,1.0,0.0,1.0);  // green
+		color[i+18] = color4(0.0,1.0,1.0,1.0);  // cyan
+		color[i+24] = color4(0.0,0.0,1.0,1.0);  // blue
+		color[i+30] = color4(1.0,0.0,1.0,1.0);  // magenta
 	}
 
 	cube[0] = vertices[0];

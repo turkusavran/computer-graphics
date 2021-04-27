@@ -7,46 +7,42 @@
 // MARK: - Rubiks Cube
 
 void rubiksCube() {
-    int curr = 0;
+    int current = 0;
     float red = 0.0;
     float green = 0.0;
     float blue = 0.0;
-    int totalFaces = faceVertices*cubeFaces;
-    color4 *color = new point4[totalFaces];
-    point4 *cube = new point4[totalFaces];
-    vec3 cubeDisplacement;
-
+    point4 *cube = new point4[numOneCubeVertices];
+    color4 *color = new point4[numOneCubeVertices];
+    
+    // Create 8 sub cubes
     for (int i = -1 ; i <= 0 ; i++) {
         green = 0.0;
         red += 0.25;
-        for (int j = -1 ; j <= 0 ; j++) {
-            blue = 0.0;
+        for (int j = -1; j <= 0 ; j++) {
             green += 0.25;
+            blue = 0.0;
             for (int k = -1 ; k <= 0 ; k++) {
-                cubeCreator( cube, color );
-                cubeDisplacement = vec3(i, j, k);
-                cubeTranslation( cube, cubeDisplacement );
-                for (int j = 0 ; j < totalFaces ; j++) {
-                    vertices[curr*cubeFaces*faceVertices + j] = cube[j];
-                    colors[curr*cubeFaces*faceVertices + j] = color[j];
-                }
-                futureCubePos[i+1][j+1][k+1] = curr;
-                currCubePos[i+1][j+1][k+1] = curr;
                 blue += 0.25;
-                colorSelector[curr] = color4(red, green, blue, 1.0);
-                curr++;
+                cubeCreator( cube, color );
+                
+                // Cube translation
+                mat4 translation = Translate( vec3(i, j, k) );
+                for (int i = 0; i < numOneCubeVertices ; i++) {
+                    cube[i] = translation * cube[i];
+                }
+                
+                // Set vertices and colors
+                for (int m = 0 ; m < numOneCubeVertices ; m++) {
+                    vertices[current * numOneCubeVertices + m] = cube[m];
+                    colors[current * numOneCubeVertices + m] = color[m];
+                }
+                nextCubePos[i+1][j+1][k+1] = current;
+                currentCubePos[i+1][j+1][k+1] = current;
+                
+                colorSelector[current] = color4(red, green, blue, 1.0);
+                current++;
             }
         }
-    }
-}
-
-// MARK: - Cube Translation
-
-void cubeTranslation( point4 *cube, vec3 displacement ) {
-    mat4 translation = Translate(displacement);
-    int totalFaces = faceVertices*cubeFaces;
-    for (int i = 0; i < totalFaces ; i++) {
-        cube[i] = translation*cube[i];
     }
 }
 
@@ -59,13 +55,13 @@ void cubeSideRotation( int delta ) {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             if (rotationAxis == axisX) {
-                currPos = currCubePos[currentBlock][i][j];
+                currPos = currentCubePos[currentBlock][i][j];
                 rotationMatrix[currPos] = RotateX(delta) * rotationMatrix[currPos];
             } else if (rotationAxis == axisY) {
-                currPos = currCubePos[i][currentBlock][j];
+                currPos = currentCubePos[i][currentBlock][j];
                 rotationMatrix[currPos] = RotateY(delta) * rotationMatrix[currPos];
             } else if (rotationAxis == axisZ) {
-                currPos = currCubePos[i][j][currentBlock];
+                currPos = currentCubePos[i][j][currentBlock];
                 rotationMatrix[currPos] = RotateZ(delta) * rotationMatrix[currPos];
             }
             glUniformMatrix4fv(vRotation[currPos], 1, GL_TRUE, rotationMatrix[currPos]);
@@ -78,7 +74,7 @@ void cubeSideRotation( int delta ) {
         for (int k = 0 ; k < 3 ; k++) {
             for (int l = 0 ; l < 3 ; l++) {
                 for (int m = 0 ; m < 3 ; m++) {
-                    currCubePos[k][l][m] = futureCubePos[k][l][m];
+                    currentCubePos[k][l][m] = nextCubePos[k][l][m];
                 }
             }
         }
@@ -86,46 +82,6 @@ void cubeSideRotation( int delta ) {
     } else {
         glutTimerFunc(animationSpeed, cubeSideRotation, delta);
     }
-}
-
-// MARK: - Randomly Initialize Cube
-
-void randomInitialization( int numRotations ) {
-    int direction;
-    int currPos;
-
-    for (int iter = 0 ; iter < numRotations ; iter++) {
-        currentBlock = rand() % 3;
-        rotationAxis = rand() % 3;
-        if(rand() % 2 == 1) {
-            direction = 1;
-        } else {
-            direction = -1;
-        }
-        rubiksCubeRotation( direction, currentBlock, rotationAxis );
-        for (int i = 0 ; i < 3 ; i++) {
-            for (int j = 0 ; j < 3 ; j++) {
-                if (rotationAxis == axisX) {
-                    currPos = currCubePos[currentBlock][i][j];
-                    rotationMatrix[currPos] = RotateX(direction*90)*rotationMatrix[currPos];
-                } else if (rotationAxis == axisY) {
-                    currPos = currCubePos[i][currentBlock][j];
-                    rotationMatrix[currPos] = RotateY(direction*90)*rotationMatrix[currPos];
-                } else if (rotationAxis == axisZ) {
-                    currPos = currCubePos[i][j][currentBlock];
-                    rotationMatrix[currPos] = RotateZ(direction*90)*rotationMatrix[currPos];
-                }
-            }
-        }
-        for (int k=0 ; k < 3 ; k++) {
-            for (int l = 0 ; l < 3 ; l++) {
-                for (int m = 0 ; m < 3 ; m++) {
-                    currCubePos[k][l][m] = futureCubePos[k][l][m];
-                }
-            }
-        }
-    }
-    rotatePhase = 0;
 }
 
 // MARK: - Rotate Rubiks Cube
@@ -136,11 +92,11 @@ void rubiksCubeRotation( int direction, int subcube, int axis ) {
         for (int i = 0 ; i < 3 ; i++) {
             for (int j = 0; j < 3 ; j++) {
                 if (axis == axisX) {
-                    rotation[j][2-i] = futureCubePos[subcube][i][j];
+                    rotation[j][2-i] = nextCubePos[subcube][i][j];
                 } else if (axis == axisY) {
-                    rotation[2-j][i] = futureCubePos[i][subcube][j];
+                    rotation[2-j][i] = nextCubePos[i][subcube][j];
                 } else if (axis == axisZ) {
-                    rotation[j][2-i] = futureCubePos[i][j][subcube];
+                    rotation[j][2-i] = nextCubePos[i][j][subcube];
                 }
             }
         }
@@ -148,25 +104,25 @@ void rubiksCubeRotation( int direction, int subcube, int axis ) {
         for (int i = 0 ; i < 3 ; i++) {
             for (int j = 0 ; j < 3 ; j++) {
                 if (axis == axisX) {
-                    rotation[2-j][i] = futureCubePos[subcube][i][j];
+                    rotation[2-j][i] = nextCubePos[subcube][i][j];
                 } else if (axis == axisY) {
-                    rotation[j][2-i] = futureCubePos[i][subcube][j];
+                    rotation[j][2-i] = nextCubePos[i][subcube][j];
                 } else if (axis == axisZ) {
-                    rotation[2-j][i] = futureCubePos[i][j][subcube];
+                    rotation[2-j][i] = nextCubePos[i][j][subcube];
                 }
             }
         }
     }
 
-    /*copy back the transposed subcube to futureCubePos*/
+    /*copy back the transposed subcube to nextCubePos*/
     for (int i = 0 ; i < 3 ; i++) {
         for (int l = 0 ; l < 3 ; l++) {
             if (axis == axisX) {
-                futureCubePos[subcube][i][l] = rotation[i][l];
+                nextCubePos[subcube][i][l] = rotation[i][l];
             } else if (axis == axisY) {
-                futureCubePos[i][subcube][l] = rotation[i][l];
+                nextCubePos[i][subcube][l] = rotation[i][l];
             } else if (axis == axisZ) {
-                futureCubePos[i][l][subcube] = rotation[i][l];
+                nextCubePos[i][l][subcube] = rotation[i][l];
             }
         }
     }
@@ -366,7 +322,7 @@ int rotateAlong( int axis, int nextA, int nextB, int key ) {
     return rotation;
 }
 
-// MARK: - Rotation
+// MARK: - Perform Rotation
 
 int performRotation( int currX, int currY, int currZ, int nextX, int nextY, int nextZ, int key ) {
     int rotation = 0;
@@ -408,7 +364,7 @@ int performRotation( int currX, int currY, int currZ, int nextX, int nextY, int 
 int cubeSelector( int a, int b, int key ) {
     int rotation = 0;
     int nextX = -1;
-    int nextY=-1;
+    int nextY = -1;
     int nextZ = -1;
     int temp = 0;
     unsigned char point[4];
@@ -421,16 +377,16 @@ int cubeSelector( int a, int b, int key ) {
 
     while (cubeVert < numCubeVertices) {
         glUniform1i( currentCube, cubeVert );
-        glDrawArrays( GL_TRIANGLES, temp, (cubeFaces*faceVertices) );
-        temp = temp + (cubeFaces*faceVertices);
+        glDrawArrays( GL_TRIANGLES, temp, numOneCubeVertices );
+        temp = temp + numOneCubeVertices;
         cubeVert++;
     }
 
     glUniform1i( selectCube, 0 );
     glFlush();
-    b = glutGet( GLUT_WINDOW_HEIGHT )-b;
+    b = glutGet( GLUT_WINDOW_HEIGHT ) - b;
     
-    // Read point color from the back buffer 
+    // Read point color from the back buffer
     glReadPixels( a, b, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, point );
 
     int k = (int)point[0];
@@ -449,8 +405,8 @@ int cubeSelector( int a, int b, int key ) {
     cubeVert = 0;
     while (cubeVert < numCubeVertices) {
         glUniform1i( currentCube, cubeVert );
-        glDrawArrays( GL_TRIANGLES, temp, (cubeFaces*faceVertices) );
-        temp = temp + (cubeFaces*faceVertices);
+        glDrawArrays( GL_TRIANGLES, temp, numOneCubeVertices );
+        temp = temp + numOneCubeVertices;
         cubeVert++;
     }
 
@@ -470,7 +426,7 @@ int cubeSelector( int a, int b, int key ) {
     for (int i = 0 ; i < 3 ; i++) {
         for (int j = 0 ; j < 3 ; j++) {
             for (int k = 0 ; k < 3 ; k++) {
-                if (currCubePos[i][j][k] == cube) {
+                if (currentCubePos[i][j][k] == cube) {
                     nextX = i;
                     nextY = j;
                     nextZ = k;
@@ -488,6 +444,46 @@ int cubeSelector( int a, int b, int key ) {
     return rotation;
 }
 
+// MARK: - Randomly Initialize Cube
+
+void randomInitialization( int numRotations ) {
+    int direction;
+    int currPos;
+
+    for (int iter = 0 ; iter < numRotations ; iter++) {
+        currentBlock = rand() % 3;
+        rotationAxis = rand() % 3;
+        if(rand() % 2 == 1) {
+            direction = 1;
+        } else {
+            direction = -1;
+        }
+        rubiksCubeRotation( direction, currentBlock, rotationAxis );
+        for (int i = 0 ; i < 3 ; i++) {
+            for (int j = 0 ; j < 3 ; j++) {
+                if (rotationAxis == axisX) {
+                    currPos = currentCubePos[currentBlock][i][j];
+                    rotationMatrix[currPos] = RotateX(direction*90)*rotationMatrix[currPos];
+                } else if (rotationAxis == axisY) {
+                    currPos = currentCubePos[i][currentBlock][j];
+                    rotationMatrix[currPos] = RotateY(direction*90)*rotationMatrix[currPos];
+                } else if (rotationAxis == axisZ) {
+                    currPos = currentCubePos[i][j][currentBlock];
+                    rotationMatrix[currPos] = RotateZ(direction*90)*rotationMatrix[currPos];
+                }
+            }
+        }
+        for (int k=0 ; k < 3 ; k++) {
+            for (int l = 0 ; l < 3 ; l++) {
+                for (int m = 0 ; m < 3 ; m++) {
+                    currentCubePos[k][l][m] = nextCubePos[k][l][m];
+                }
+            }
+        }
+    }
+    rotatePhase = 0;
+}
+
 // MARK: - Initialization
 
 void init() {
@@ -495,7 +491,7 @@ void init() {
     rubiksCube();
     
     // Randomize Rubik's cube
-    randomInitialization(5);
+    // randomInitialization(5);
     
     // Initialize rotation matrix
     for (int i=0; i < numCubes; i++) {
@@ -520,11 +516,12 @@ void init() {
     // Set up vertex arrays
     GLuint vPosition = glGetAttribLocation( program, "vPosition" );
     glEnableVertexAttribArray( vPosition );
-    glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+    glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET( 0 ));
 
     GLuint svPosition = glGetAttribLocation( program, "vColor" );
     glEnableVertexAttribArray( svPosition );
-    glVertexAttribPointer( svPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(point4)*numCubeVertices) );
+    glVertexAttribPointer( svPosition, 4, GL_FLOAT, GL_FALSE, 0,
+                          BUFFER_OFFSET( sizeof(point4)*numCubeVertices) );
 
     ModelView = glGetUniformLocation( program, "ModelView" );
     Projection = glGetUniformLocation( program, "Projection" );
@@ -539,7 +536,7 @@ void init() {
     while (cubes < numCubes) {
         iter = to_string(cubes);
         vRotation[cubes] = glGetUniformLocation( program, ("vRotation[" + iter + "]").c_str() );
-        glUniformMatrix4fv(vRotation[cubes], 1, GL_TRUE, rotationMatrix[cubes] );
+        glUniformMatrix4fv( vRotation[cubes], 1, GL_TRUE, rotationMatrix[cubes] );
         cubeColor[cubes] = glGetUniformLocation( program, ("cubeColor[" + iter + "]").c_str() );
         glUniform4fv( cubeColor[cubes], 1, colorSelector[cubes] );
         cubes++;
@@ -560,7 +557,7 @@ void init() {
 void display() {
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     
-    const vec3 displacement( 0.0, 0.0, 0.0 );
+    const vec3 displacement( 0.5, -0.5, 0.5 );
     mat4  model_view = ( Translate( displacement ) *
                         RotateX( Theta[axisX] + rotateX ) *
                         RotateY( Theta[axisY] ) *
@@ -574,9 +571,9 @@ void display() {
     
     while (cubeVertices < numCubeVertices) {
         glUniform1i( currentCube, temp );
-        glDrawArrays( GL_TRIANGLES, cubeVertices, (cubeFaces*faceVertices) );
+        glDrawArrays( GL_TRIANGLES, cubeVertices, numOneCubeVertices );
         temp++;
-        cubeVertices += ( cubeFaces*faceVertices );
+        cubeVertices += numOneCubeVertices;
     }
 
     glUniform1i( edge, 1 );
@@ -585,14 +582,14 @@ void display() {
     temp = -1;
     cubeVertices = 0;
     while (cubeVertices < numCubeVertices) {
-        if (cubeVertices % (cubeFaces*faceVertices) == 0) {
+        if (cubeVertices % numOneCubeVertices == 0) {
             temp++;
         }
         glUniform1i( currentCube, temp );
         glDrawArrays( GL_LINE_STRIP, cubeVertices, 3 );
         cubeVertices += 3;
     }
-
+    
     glUniform1i( edge, 0 );
     glutSwapBuffers();
 }

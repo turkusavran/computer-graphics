@@ -32,7 +32,6 @@ color4 colorSelector[numCubes];
 color4 colors[numCubeVertices];
 point4 vertices[numCubeVertices];
 
-
 // Cube position
 int currCubePos[2][2][2];
 int futureCubePos[2][2][2];
@@ -49,11 +48,10 @@ int edge;
 int currentCube;
 int vRotation[numCubes];
 
-//Variable for the shader
+// Variable for the shader
 int selectCube;
 int selectFace;
 int cubeColor[numCubes];
-
 
 int cubeSelector(int x, int y, int button);
 int performRotation(int currX, int currY, int currZ, int nextX, int nextY, int nextZ, int key);
@@ -70,6 +68,66 @@ void previousMove();
 // MARK: - Cube Vertices
 
 void cubeCreator(point4 *cube, color4 *color) {
+    /*
+    const int NumVerticesCube = 36;
+    point4 pointsCube[NumVerticesCube];
+    color4 colors[NumVerticesCube];
+
+    // Vertices of a unit cube
+    point4 verticesCube[8] = {
+        point4( -0.5, -0.5,  0.5, 1.0 ),
+        point4( -0.5,  0.5,  0.5, 1.0 ),
+        point4(  0.5,  0.5,  0.5, 1.0 ),
+        point4(  0.5, -0.5,  0.5, 1.0 ),
+        point4( -0.5, -0.5, -0.5, 1.0 ),
+        point4( -0.5,  0.5, -0.5, 1.0 ),
+        point4(  0.5,  0.5, -0.5, 1.0 ),
+        point4(  0.5, -0.5, -0.5, 1.0 )
+    };
+
+    // RGBA colors
+    color4 vertex_colors[8] = {
+        color4( 0.0, 0.0, 0.0, 1.0 ),  // black
+        color4( 1.0, 0.0, 0.0, 1.0 ),  // red
+        color4( 1.0, 1.0, 0.0, 1.0 ),  // yellow
+        color4( 0.0, 1.0, 0.0, 1.0 ),  // green
+        color4( 0.0, 0.0, 1.0, 1.0 ),  // blue
+        color4( 1.0, 0.0, 1.0, 1.0 ),  // magenta
+        color4( 1.0, 1.0, 1.0, 1.0 ),  // white
+        color4( 0.0, 1.0, 1.0, 1.0 )   // cyan
+    };
+
+    // Array of rotation angles (in degrees) for each coordinate axis
+    enum { Xaxis = 0, Yaxis = 1, Zaxis = 2, NumAxes = 3 };
+    int Axis = Xaxis;
+
+    GLfloat Theta[NumAxes] = { 0.0, 0.0, 0.0 };
+
+    // Model-view, projection and color matrices uniform location
+    GLuint ModelView, Projection, Color;
+    GLuint vao[3];
+
+    // quad generates two triangles for each face
+    int Index = 0;
+    void quad( int a, int b, int c, int d ) {
+        pointsCube[Index] = verticesCube[a]; Index++;
+        pointsCube[Index] = verticesCube[b]; Index++;
+        pointsCube[Index] = verticesCube[c]; Index++;
+        pointsCube[Index] = verticesCube[a]; Index++;
+        pointsCube[Index] = verticesCube[c]; Index++;
+        pointsCube[Index] = verticesCube[d]; Index++;
+    }
+
+    // generate 12 triangles: 36 vertices
+    void cube() {
+        quad( 1, 0, 3, 2 );
+        quad( 2, 3, 7, 6 );
+        quad( 3, 0, 4, 7 );
+        quad( 6, 5, 1, 2 );
+        quad( 4, 5, 6, 7 );
+        quad( 5, 4, 0, 1 );
+    }
+*/
 	point4 vertices[8];
 
 	vertices[0] = point4(-0.5, 0.5, -0.5, 1.0);
@@ -131,4 +189,5 @@ void cubeCreator(point4 *cube, color4 *color) {
 	cube[33] = vertices[6];
 	cube[34] = vertices[7];
 	cube[35] = vertices[3];
+    
 }

@@ -15,7 +15,6 @@
 		91ADDE01260779A900ED2BAE /* InitShader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 91ADDDFF260779A900ED2BAE /* InitShader.cpp */; };
 		91EF07C02602766500A03DAC /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 91EF07BF2602766500A03DAC /* GLUT.framework */; settings = {ATTRIBUTES = (Required, ); }; };
 		91EF07C22602766A00A03DAC /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 91EF07C12602766A00A03DAC /* OpenGL.framework */; };
-		91EF07C4260276C700A03DAC /* libGlew.2.2.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 91EF07C3260276C700A03DAC /* libGlew.2.2.0.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -36,7 +35,6 @@
 /* Begin PBXFileReference section */
 		9171E46426026F4D00405F6F /* Assignment1 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Assignment1; sourceTree = BUILT_PRODUCTS_DIR; };
 		9171E47D2602743900405F6F /* Assignment1.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Assignment1.entitlements; sourceTree = "<group>"; };
-		91ADDDB62603EB5F00ED2BAE /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		91ADDDC22603F0A100ED2BAE /* vshader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = vshader.glsl; sourceTree = "<group>"; };
 		91ADDDC32603F0A100ED2BAE /* fshader.glsl */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = fshader.glsl; sourceTree = "<group>"; };
 		91ADDDE12603F61F00ED2BAE /* Angel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Angel.h; sourceTree = "<group>"; };
@@ -47,7 +45,6 @@
 		91ADDDFF260779A900ED2BAE /* InitShader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InitShader.cpp; sourceTree = "<group>"; };
 		91EF07BF2602766500A03DAC /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 		91EF07C12602766A00A03DAC /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
-		91EF07C3260276C700A03DAC /* libGlew.2.2.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libGlew.2.2.0.dylib; path = ../../../../../../../usr/local/Cellar/glew/2.2.0_1/lib/libGlew.2.2.0.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -56,7 +53,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				91EF07C02602766500A03DAC /* GLUT.framework in Frameworks */,
-				91EF07C4260276C700A03DAC /* libGlew.2.2.0.dylib in Frameworks */,
 				91EF07C22602766A00A03DAC /* OpenGL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -100,8 +96,6 @@
 		91EF07BE2602766500A03DAC /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				91ADDDB62603EB5F00ED2BAE /* Metal.framework */,
-				91EF07C3260276C700A03DAC /* libGlew.2.2.0.dylib */,
 				91EF07C12602766A00A03DAC /* OpenGL.framework */,
 				91EF07BF2602766500A03DAC /* GLUT.framework */,
 			);

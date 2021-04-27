@@ -4,73 +4,49 @@
 #define GL_SILENCE_DEPRECATION
 #include "main.h"
 
-// MARK: - Help Menu
+// MARK: - Rubiks Cube
 
-void helpMenu( ) {
-    printf("Rotation of the Cube:\n");
-    printf("  1. Press Up or Down arrow keys to rotate the Rubik's cube horizontally\n");
-    printf("  2. Press Left or Right arrow keys to rotate the Rubik's cube vertically\n\n");
-    printf("Click to move the slabs of the cube to change configuration:\n");
-    printf("  1. For vertical slab rotation, perform a right-click\n");
-    printf("  2. For horizontal slab rotation, perform a left-click\n");
-    printf("  -- Click on the corner sub-cube to perform slab rotation in that particular direction\n\n");
-    printf("Press p or P to revert the last rotation/move\n");
-    printf("Press z or Z to zoom in (magnify) the Rubik's cube\n");
-    printf("Press x or X to zoom out (shrink) the Rubik's cube\n");
-    printf("Press i or I key to go to the initial position\n");
-    printf("Press b or B to change background color to Black\n");
-    printf("Press g or G to change background color to Gray\n");
-    printf("Press w or W to change background color to White\n");
-    printf("Press h or H key for help\n");
-    printf("Press q or Q key to exit application\n\n");
-}
-
-// MARK: - Display
-
-void display() {
-    int temp = 0;
-    int cubeVert = 0;
-    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-
-    //  Generate tha model-view matrix
-    const vec3 displacement( 0.0, 0.0, 0.0 );
-    mat4  model_view = ( Translate(displacement) *
-                        RotateX(Theta[axisX] + rotateX)*
-                        RotateY(Theta[axisY] )*
-                        RotateZ(Theta[axisZ] + rotateZ) *
-                        Scale(scaleFactor,scaleFactor,scaleFactor) );
+void rubiksCube() {
+    int current = 0;
+    float red = 0.0;
+    float green = 0.0;
+    float blue = 0.0;
+    point4 *cube = new point4[numOneCubeVertices];
+    color4 *color = new point4[numOneCubeVertices];
     
-    glUniformMatrix4fv( ModelView, 1, GL_TRUE, model_view );
-
-    /* render subcubes */
-    while ( cubeVert < numCubeVertices ) {
-        glUniform1i( currentCube, temp );
-        glDrawArrays( GL_TRIANGLES, cubeVert, (cubeFaces*faceVertices) );
-        temp++;
-        cubeVert += ( cubeFaces*faceVertices );
-    }
-
-    glUniform1i( edge, 1 );
-
-    /* rendering cube edges using wireframes */
-    temp = -1;
-    cubeVert = 0;
-    while (cubeVert < numCubeVertices) {
-        if (cubeVert % (cubeFaces*faceVertices) == 0) {
-            temp++;
+    // Create 8 sub cubes
+    for (int i = -1 ; i <= 0 ; i++) {
+        green = 0.0;
+        red += 0.25;
+        for (int j = -1; j <= 0 ; j++) {
+            green += 0.25;
+            blue = 0.0;
+            for (int k = -1 ; k <= 0 ; k++) {
+                blue += 0.25;
+                cubeCreator( cube, color );
+                
+                // Cube translation
+                mat4 translation = Translate( vec3(i, j, k) );
+                for (int i = 0; i < numOneCubeVertices ; i++) {
+                    cube[i] = translation * cube[i];
+                }
+                
+                // Set vertices and colors
+                for (int m = 0 ; m < numOneCubeVertices ; m++) {
+                    vertices[current * numOneCubeVertices + m] = cube[m];
+                    colors[current * numOneCubeVertices + m] = color[m];
+                }
+                nextCubePos[i+1][j+1][k+1] = current;
+                currentCubePos[i+1][j+1][k+1] = current;
+                
+                colorSelector[current] = color4(red, green, blue, 1.0);
+                current++;
+            }
         }
-        glUniform1i( currentCube, temp );
-        glDrawArrays( GL_LINE_STRIP, cubeVert, 3 );
-        cubeVert += 3;
     }
-
-    glUniform1i( edge, 0 );
-    glutSwapBuffers();
 }
 
-
-//------------------------------------------------------------------------
-
+// MARK: - Rotate S
 /* Rotate the slab by angle delta */
 void cubeSideRotation( int delta ) {
     int currPos = 0;
@@ -79,13 +55,13 @@ void cubeSideRotation( int delta ) {
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
             if (rotationAxis == axisX) {
-                currPos = currCubePos[currentBlock][i][j];
+                currPos = currentCubePos[currentBlock][i][j];
                 rotationMatrix[currPos] = RotateX(delta) * rotationMatrix[currPos];
             } else if (rotationAxis == axisY) {
-                currPos = currCubePos[i][currentBlock][j];
+                currPos = currentCubePos[i][currentBlock][j];
                 rotationMatrix[currPos] = RotateY(delta) * rotationMatrix[currPos];
             } else if (rotationAxis == axisZ) {
-                currPos = currCubePos[i][j][currentBlock];
+                currPos = currentCubePos[i][j][currentBlock];
                 rotationMatrix[currPos] = RotateZ(delta) * rotationMatrix[currPos];
             }
             glUniformMatrix4fv(vRotation[currPos], 1, GL_TRUE, rotationMatrix[currPos]);
@@ -98,7 +74,7 @@ void cubeSideRotation( int delta ) {
         for (int k = 0 ; k < 3 ; k++) {
             for (int l = 0 ; l < 3 ; l++) {
                 for (int m = 0 ; m < 3 ; m++) {
-                    currCubePos[k][l][m] = futureCubePos[k][l][m];
+                    currentCubePos[k][l][m] = nextCubePos[k][l][m];
                 }
             }
         }
@@ -106,203 +82,6 @@ void cubeSideRotation( int delta ) {
     } else {
         glutTimerFunc(animationSpeed, cubeSideRotation, delta);
     }
-}
-
-// MARK: - Mouse
-
-void mouseAction( int key, int state, int x, int y ) {
-    int direction;
-    if (state == GLUT_DOWN && rotatePhase == 0) {
-        /*Set the currentBlock and rotationAxis after picking
-        the cube and face and returns the direction of rotation*/
-        direction = cubeSelector(x, y, key);
-        if (direction < 0) {
-          rubiksCubeRotation(direction, currentBlock, rotationAxis);
-          rotatePhase = 180;
-          cubeSideRotation(-5);
-        } else if (direction > 0) {
-          rubiksCubeRotation(direction, currentBlock, rotationAxis);
-          rotatePhase = 0;
-          cubeSideRotation(5);
-        }
-        /* Add move to history vector */
-          cubeMoves.push_back(CubeHistory(currentBlock, rotationAxis, direction));
-    }
-}
-
-
-// MARK: - Arrow Keys
-
-void arrowKeysAction( int key, int a, int b ) {
-    if (key == GLUT_KEY_LEFT) {
-        rotateZ += 4;
-    } else if (key == GLUT_KEY_RIGHT) {
-        rotateZ -= 4;
-    } else if (key == GLUT_KEY_UP) {
-        rotateX += 4;
-    } else if (key == GLUT_KEY_DOWN) {
-        rotateX -= 4;
-    }
-
-    glutPostRedisplay();
-}
-
-// MARK: - Keyboard
-
-void keyboard( unsigned char key, int x, int y ) {
-    if (key == 'i' | key == 'I') {
-        initialState();
-    } else if (key == 'p' | key == 'P') {
-        previousMove();
-    } else if (key == 'z' | key == 'Z') {
-        scaleFactor += scaleFactor*0.1;
-    } else if (key == 'x'| key == 'X') {
-        scaleFactor -= scaleFactor*0.1;
-    } else if (key == 'h'| key == 'H') {
-        helpMenu();
-    } else if (key == 'g' | key == 'G') {
-        backgroundColor(2);
-    } else if (key == 'w' | key == 'W') {
-        backgroundColor(1);
-    } else if (key == 'b' | key == 'B') {
-        backgroundColor(0);
-    } else if (key == 'q' | key == 'Q') {
-        exit(0);
-    }
-    glutPostRedisplay();
-}
-
-// MARK: - Initial State
-
-void initialState() {
-    rotateX = 135.0;
-    rotateZ = -45.0;
-    scaleFactor = 1.0;
-    backgroundColor(1);
-}
-
-// MARK: - Previous Move
-
-void previousMove() {
-    if (rotatePhase == 0) {
-        if (cubeMoves.size() == 0) {
-            cout << "No more previous moves in history vector" << endl;
-        } else {
-            CubeHistory history = cubeMoves.back();
-            cubeMoves.pop_back();
-            currentBlock = history.SubCube;
-            rotationAxis = history.Axis;
-            if (history.RotationDirection == -1) {
-                rubiksCubeRotation(-history.RotationDirection, currentBlock, rotationAxis);
-                rotatePhase = 0;
-                cubeSideRotation(5);
-            } else if (history.RotationDirection == 1) {
-                rubiksCubeRotation(-history.RotationDirection, currentBlock, rotationAxis);
-                rotatePhase = 180;
-                cubeSideRotation(-5);
-            }
-        }
-    }
-}
-
-// MARK: - Reshape
-
-void reshape( int width, int height ) {
-    glViewport( 0, 0, width, height );
-    mat4 projection;
-    if (width <= height)
-      projection = Ortho( -4, 4, -4/(GLfloat(width)/height ), 4/(GLfloat(width)/height), -4, 4);
-    else
-      projection = Ortho( -4*(GLfloat(width)/height ), 4*(GLfloat(width)/height), -4, 4, -4, 4);
-
-    glUniformMatrix4fv( Projection, 1, GL_TRUE, projection );
-}
-
-// MARK: - Cube Translation
-
-void cubeTranslation( point4 *cube, vec3 displacement ) {
-    mat4 translation = Translate(displacement);
-    int totalFaces = faceVertices*cubeFaces;
-    for (int i = 0; i < totalFaces ; i++) {
-        cube[i] = translation*cube[i];
-    }
-}
-
-// MARK: - Rubiks Cube
-
-void rubiksCube() {
-    int curr = 0;
-    float red = 0.0;
-    float green = 0.0;
-    float blue = 0.0;
-    int totalFaces = faceVertices*cubeFaces;
-    color4 *color = new point4[totalFaces];
-    point4 *cube = new point4[totalFaces];
-    vec3 cubeDisplacement;
-
-    for (int i = -1 ; i <= 1 ; i++) {
-        green = 0.0;
-        red += 0.25;
-        for (int j = -1 ; j <= 1 ; j++) {
-            blue = 0.0;
-            green += 0.25;
-            for (int k = -1 ; k <= 1 ; k++) {
-                cubeCreator( cube, color );
-                cubeDisplacement = vec3(i, j, k);
-                cubeTranslation( cube, cubeDisplacement );
-                for (int j = 0 ; j < totalFaces ; j++) {
-                    vertices[(curr*(cubeFaces*faceVertices)) + j] = cube[j];
-                    colors[(curr*(cubeFaces*faceVertices)) + j] = color[j];
-                }
-                futureCubePos[i+1][j+1][k+1] = curr;
-                currCubePos[i+1][j+1][k+1] = curr;
-                blue += 0.25;
-                colorSelector[curr] = color4(red, green, blue, 1.0);
-                curr++;
-            }
-        }
-    }
-}
-
-// MARK: - Randomly Initialize Cube
-
-void randomInitialization( int numRotations ) {
-    int direction;
-    int currPos;
-
-    for (int iter = 0 ; iter < numRotations ; iter++) {
-        currentBlock = rand() % 3;
-        rotationAxis = rand() % 3;
-        if(rand() % 2 == 1) {
-            direction = 1;
-        } else {
-            direction = -1;
-        }
-        rubiksCubeRotation( direction, currentBlock, rotationAxis );
-        cubeMoves.push_back( CubeHistory(currentBlock, rotationAxis, direction) );
-        for (int i = 0 ; i < 3 ; i++) {
-            for (int j = 0 ; j < 3 ; j++) {
-                if (rotationAxis == axisX) {
-                    currPos = currCubePos[currentBlock][i][j];
-                    rotationMatrix[currPos] = RotateX(direction*90)*rotationMatrix[currPos];
-                } else if (rotationAxis == axisY) {
-                    currPos = currCubePos[i][currentBlock][j];
-                    rotationMatrix[currPos] = RotateY(direction*90)*rotationMatrix[currPos];
-                } else if (rotationAxis == axisZ) {
-                    currPos = currCubePos[i][j][currentBlock];
-                    rotationMatrix[currPos] = RotateZ(direction*90)*rotationMatrix[currPos];
-                }
-            }
-        }
-        for (int k=0 ; k < 3 ; k++) {
-            for (int l = 0 ; l < 3 ; l++) {
-                for (int m = 0 ; m < 3 ; m++) {
-                    currCubePos[k][l][m] = futureCubePos[k][l][m];
-                }
-            }
-        }
-    }
-    rotatePhase = 0;
 }
 
 // MARK: - Rotate Rubiks Cube
@@ -313,11 +92,11 @@ void rubiksCubeRotation( int direction, int subcube, int axis ) {
         for (int i = 0 ; i < 3 ; i++) {
             for (int j = 0; j < 3 ; j++) {
                 if (axis == axisX) {
-                    rotation[j][2-i] = futureCubePos[subcube][i][j];
+                    rotation[j][2-i] = nextCubePos[subcube][i][j];
                 } else if (axis == axisY) {
-                    rotation[2-j][i] = futureCubePos[i][subcube][j];
+                    rotation[2-j][i] = nextCubePos[i][subcube][j];
                 } else if (axis == axisZ) {
-                    rotation[j][2-i] = futureCubePos[i][j][subcube];
+                    rotation[j][2-i] = nextCubePos[i][j][subcube];
                 }
             }
         }
@@ -325,25 +104,25 @@ void rubiksCubeRotation( int direction, int subcube, int axis ) {
         for (int i = 0 ; i < 3 ; i++) {
             for (int j = 0 ; j < 3 ; j++) {
                 if (axis == axisX) {
-                    rotation[2-j][i] = futureCubePos[subcube][i][j];
+                    rotation[2-j][i] = nextCubePos[subcube][i][j];
                 } else if (axis == axisY) {
-                    rotation[j][2-i] = futureCubePos[i][subcube][j];
+                    rotation[j][2-i] = nextCubePos[i][subcube][j];
                 } else if (axis == axisZ) {
-                    rotation[2-j][i] = futureCubePos[i][j][subcube];
+                    rotation[2-j][i] = nextCubePos[i][j][subcube];
                 }
             }
         }
     }
 
-    /*copy back the transposed subcube to futureCubePos*/
+    /*copy back the transposed subcube to nextCubePos*/
     for (int i = 0 ; i < 3 ; i++) {
         for (int l = 0 ; l < 3 ; l++) {
             if (axis == axisX) {
-                futureCubePos[subcube][i][l] = rotation[i][l];
+                nextCubePos[subcube][i][l] = rotation[i][l];
             } else if (axis == axisY) {
-                futureCubePos[i][subcube][l] = rotation[i][l];
+                nextCubePos[i][subcube][l] = rotation[i][l];
             } else if (axis == axisZ) {
-                futureCubePos[i][l][subcube] = rotation[i][l];
+                nextCubePos[i][l][subcube] = rotation[i][l];
             }
         }
     }
@@ -543,7 +322,7 @@ int rotateAlong( int axis, int nextA, int nextB, int key ) {
     return rotation;
 }
 
-// MARK: - Rotation
+// MARK: - Perform Rotation
 
 int performRotation( int currX, int currY, int currZ, int nextX, int nextY, int nextZ, int key ) {
     int rotation = 0;
@@ -585,7 +364,7 @@ int performRotation( int currX, int currY, int currZ, int nextX, int nextY, int 
 int cubeSelector( int a, int b, int key ) {
     int rotation = 0;
     int nextX = -1;
-    int nextY=-1;
+    int nextY = -1;
     int nextZ = -1;
     int temp = 0;
     unsigned char point[4];
@@ -598,16 +377,16 @@ int cubeSelector( int a, int b, int key ) {
 
     while (cubeVert < numCubeVertices) {
         glUniform1i( currentCube, cubeVert );
-        glDrawArrays( GL_TRIANGLES, temp, (cubeFaces*faceVertices) );
-        temp = temp + (cubeFaces*faceVertices);
+        glDrawArrays( GL_TRIANGLES, temp, numOneCubeVertices );
+        temp = temp + numOneCubeVertices;
         cubeVert++;
     }
 
     glUniform1i( selectCube, 0 );
     glFlush();
-    b = glutGet( GLUT_WINDOW_HEIGHT )-b;
+    b = glutGet( GLUT_WINDOW_HEIGHT ) - b;
     
-    /* read point color from the back buffer */
+    // Read point color from the back buffer
     glReadPixels( a, b, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, point );
 
     int k = (int)point[0];
@@ -626,16 +405,15 @@ int cubeSelector( int a, int b, int key ) {
     cubeVert = 0;
     while (cubeVert < numCubeVertices) {
         glUniform1i( currentCube, cubeVert );
-        glDrawArrays( GL_TRIANGLES, temp, (cubeFaces*faceVertices) );
-        temp = temp + (cubeFaces*faceVertices);
+        glDrawArrays( GL_TRIANGLES, temp, numOneCubeVertices );
+        temp = temp + numOneCubeVertices;
         cubeVert++;
     }
 
     glUniform1i( selectFace, 0 );
     glFlush();
 
-    
-    /* retrieve point color from the back buffer */
+    // Retrieve point color from the back buffer
     glReadPixels( a, b, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, point );
     
     k = (int)point[0];
@@ -648,7 +426,7 @@ int cubeSelector( int a, int b, int key ) {
     for (int i = 0 ; i < 3 ; i++) {
         for (int j = 0 ; j < 3 ; j++) {
             for (int k = 0 ; k < 3 ; k++) {
-                if (currCubePos[i][j][k] == cube) {
+                if (currentCubePos[i][j][k] == cube) {
                     nextX = i;
                     nextY = j;
                     nextZ = k;
@@ -658,7 +436,7 @@ int cubeSelector( int a, int b, int key ) {
         }
     }
 
-    /* Performing rotation in the appropriate axes */
+    // Perform rotation with appropriate axes
     rotation = performRotation( k, l, m, nextX, nextY, nextZ, key );
     
     glutPostRedisplay();
@@ -666,30 +444,60 @@ int cubeSelector( int a, int b, int key ) {
     return rotation;
 }
 
-// MARK: - Background Color
+// MARK: - Randomly Initialize Cube
 
-void backgroundColor(int option) {
-    if (option == 0) {         // Black
-        glClearColor(0.0, 0.0, 0.0, 1.0);
-    } else if (option == 1) {  // White
-        glClearColor(1.0, 1.0, 1.0, 1.0);
-    } else if (option == 2) {  // Gray
-        glClearColor(0.5, 0.5, 0.5, 1.0);
+void randomInitialization( int numRotations ) {
+    int direction;
+    int currPos;
+
+    for (int iter = 0 ; iter < numRotations ; iter++) {
+        currentBlock = rand() % 3;
+        rotationAxis = rand() % 3;
+        if(rand() % 2 == 1) {
+            direction = 1;
+        } else {
+            direction = -1;
+        }
+        rubiksCubeRotation( direction, currentBlock, rotationAxis );
+        for (int i = 0 ; i < 3 ; i++) {
+            for (int j = 0 ; j < 3 ; j++) {
+                if (rotationAxis == axisX) {
+                    currPos = currentCubePos[currentBlock][i][j];
+                    rotationMatrix[currPos] = RotateX(direction*90)*rotationMatrix[currPos];
+                } else if (rotationAxis == axisY) {
+                    currPos = currentCubePos[i][currentBlock][j];
+                    rotationMatrix[currPos] = RotateY(direction*90)*rotationMatrix[currPos];
+                } else if (rotationAxis == axisZ) {
+                    currPos = currentCubePos[i][j][currentBlock];
+                    rotationMatrix[currPos] = RotateZ(direction*90)*rotationMatrix[currPos];
+                }
+            }
+        }
+        for (int k=0 ; k < 3 ; k++) {
+            for (int l = 0 ; l < 3 ; l++) {
+                for (int m = 0 ; m < 3 ; m++) {
+                    currentCubePos[k][l][m] = nextCubePos[k][l][m];
+                }
+            }
+        }
     }
+    rotatePhase = 0;
 }
 
 // MARK: - Initialization
 
 void init() {
+    // Rubik's cube init
     rubiksCube();
-    /* initializing */
+    
+    // Randomize Rubik's cube
+    // randomInitialization(5);
+    
+    // Initialize rotation matrix
     for (int i=0; i < numCubes; i++) {
         rotationMatrix[i] = RotateX(0);
     }
-    /* randomizing the rubiks cube */
-    randomInitialization(5);
-
-    /* Usual OpenGL stuff */
+    
     GLuint vao;
     glGenVertexArrays( 1, &vao );
     glBindVertexArray( vao );
@@ -697,21 +505,23 @@ void init() {
     glGenBuffers( 1, &buffer );
     glBindBuffer( GL_ARRAY_BUFFER, buffer );
 
-    /* Add vertices and their colors to buffer*/
+    // Add vertices and colors to buffer
     glBufferData( GL_ARRAY_BUFFER, (sizeof(point4) * numCubeVertices * 2), NULL, GL_STATIC_DRAW );
     glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(point4) * numCubeVertices, vertices );
     glBufferSubData( GL_ARRAY_BUFFER, sizeof(point4) * numCubeVertices, sizeof(color4) * numCubeVertices, colors );
 
-    /* Load shaders and use the resulting shader program */
+    //Load shaders and use the resulting shader program
     GLuint program = InitShader( "vshader.glsl", "fshader.glsl" );
 
+    // Set up vertex arrays
     GLuint vPosition = glGetAttribLocation( program, "vPosition" );
     glEnableVertexAttribArray( vPosition );
-    glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
+    glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET( 0 ));
 
     GLuint svPosition = glGetAttribLocation( program, "vColor" );
     glEnableVertexAttribArray( svPosition );
-    glVertexAttribPointer( svPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(point4)*numCubeVertices) );
+    glVertexAttribPointer( svPosition, 4, GL_FLOAT, GL_FALSE, 0,
+                          BUFFER_OFFSET( sizeof(point4)*numCubeVertices) );
 
     ModelView = glGetUniformLocation( program, "ModelView" );
     Projection = glGetUniformLocation( program, "Projection" );
@@ -720,20 +530,19 @@ void init() {
     selectCube = glGetUniformLocation( program, "selectCube" );
     selectFace = glGetUniformLocation( program, "selectFace" );
 
-    /* Sending initialized cube to shader*/
+    // Send cube to the shader
     int cubes = 0;
     string iter = "";
     while (cubes < numCubes) {
         iter = to_string(cubes);
         vRotation[cubes] = glGetUniformLocation( program, ("vRotation[" + iter + "]").c_str() );
-        glUniformMatrix4fv(vRotation[cubes], 1, GL_TRUE, rotationMatrix[cubes] );
+        glUniformMatrix4fv( vRotation[cubes], 1, GL_TRUE, rotationMatrix[cubes] );
         cubeColor[cubes] = glGetUniformLocation( program, ("cubeColor[" + iter + "]").c_str() );
         glUniform4fv( cubeColor[cubes], 1, colorSelector[cubes] );
         cubes++;
     }
     
     glUseProgram( program ) ;
-
     glUniform1i( edge, 0 );
     glUniform1i( currentCube, 0 );
     glUniform1i( selectCube, 0 );
@@ -743,12 +552,149 @@ void init() {
     glClearColor( 1.0, 1.0, 1.0, 1.0 );
 }
 
+// MARK: - Display
+
+void display() {
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+    
+    const vec3 displacement( 0.5, -0.5, 0.5 );
+    mat4  model_view = ( Translate( displacement ) *
+                        RotateX( Theta[axisX] + rotateX ) *
+                        RotateY( Theta[axisY] ) *
+                        RotateZ( Theta[axisZ] + rotateZ ) );
+    
+    glUniformMatrix4fv( ModelView, 1, GL_TRUE, model_view );
+
+    // Render subcubes
+    int temp = 0;
+    int cubeVertices = 0;
+    
+    while (cubeVertices < numCubeVertices) {
+        glUniform1i( currentCube, temp );
+        glDrawArrays( GL_TRIANGLES, cubeVertices, numOneCubeVertices );
+        temp++;
+        cubeVertices += numOneCubeVertices;
+    }
+
+    glUniform1i( edge, 1 );
+
+    // Render cube edges
+    temp = -1;
+    cubeVertices = 0;
+    while (cubeVertices < numCubeVertices) {
+        if (cubeVertices % numOneCubeVertices == 0) {
+            temp++;
+        }
+        glUniform1i( currentCube, temp );
+        glDrawArrays( GL_LINE_STRIP, cubeVertices, 3 );
+        cubeVertices += 3;
+    }
+    
+    glUniform1i( edge, 0 );
+    glutSwapBuffers();
+}
+
+// MARK: - Reshape
+
+void reshape( int width, int height ) {
+    glViewport( 0, 0, width, height );
+    
+    // Set the projection matrix
+    mat4 projection;
+    
+    if (width <= height)
+      projection = Ortho( -4, 4, -4/(GLfloat(width)/height ), 4/(GLfloat(width)/height), -4, 4);
+    else
+      projection = Ortho( -4*(GLfloat(width)/height ), 4*(GLfloat(width)/height), -4, 4, -4, 4);
+
+    glUniformMatrix4fv( Projection, 1, GL_TRUE, projection );
+}
+
+// MARK: - Help Menu
+
+void helpMenu() {
+    printf("Press arrow keys to rotate the cube\n");
+    printf("Click to move the faces of the cube\n");
+    printf(" - For a vertical rotation, perform a right-click\n");
+    printf(" - For a horizontal rotation, perform a left-click\n");
+    printf("Press r or R to randomize the Rubik's cube\n");
+    printf("Press z or Z to zoom in the cube\n");
+    printf("Press x or X to zoom out the cube\n");
+    printf("Press i or I  to go to the initial position\n");
+    printf("Press h or H for help\n");
+    printf("Press q or Q to exit\n\n");
+}
+
+// MARK: - Mouse
+
+void mouseAction( int key, int state, int x, int y ) {
+    int direction;
+    
+    if (state == GLUT_DOWN && rotatePhase == 0) {
+        /*Set the currentBlock and rotationAxis after picking
+        the cube and face and returns the direction of rotation*/
+        direction = cubeSelector(x, y, key);
+        if (direction < 0) {
+          rubiksCubeRotation(direction, currentBlock, rotationAxis);
+          rotatePhase = 180;
+          cubeSideRotation(-5);
+        } else if (direction > 0) {
+          rubiksCubeRotation(direction, currentBlock, rotationAxis);
+          rotatePhase = 0;
+          cubeSideRotation(5);
+        }
+    }
+}
+
+
+// MARK: - Arrow Keys
+
+void arrowKeysAction( int key, int a, int b ) {
+    switch (key) {
+        case GLUT_KEY_LEFT:
+            rotateZ += 4;
+            break;
+        case GLUT_KEY_RIGHT:
+            rotateZ -= 4;
+            break;
+        case GLUT_KEY_UP:
+            rotateX += 4;
+            break;
+        case GLUT_KEY_DOWN:
+            rotateX -= 4;
+            break;
+    }
+    glutPostRedisplay();
+}
+
+// MARK: - Keyboard
+
+void keyboard( unsigned char key, int x, int y ) {
+    switch (key) {
+        case 'i': case 'I':
+            rotateX = 135.0;
+            rotateZ = -45.0;
+            break;
+        case 'r': case 'R':
+            //randominitialize
+            break;
+        case 'h': case 'H':
+            helpMenu();
+            break;
+        case 'q': case 'Q':
+            exit(0);
+            break;
+    }
+    glutPostRedisplay();
+}
+
 // MARK: - Main
 
 int main( int agrc, char** agrv ) {
     glutInit( &agrc, agrv );
     glutInitDisplayMode( GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGBA | GLUT_3_2_CORE_PROFILE );
     glutInitWindowSize( 512, 512 );
+    glutInitWindowPosition( 100, 100 );
     glutCreateWindow( "COMP410 Assignment 2" );
     
     #ifdef __APPLE__
@@ -761,9 +707,9 @@ int main( int agrc, char** agrv ) {
     init();
     
     glutDisplayFunc( display );
+    glutKeyboardFunc( keyboard );
     glutReshapeFunc( reshape );
     glutSpecialFunc( arrowKeysAction );
-    glutKeyboardFunc( keyboard );
     glutMouseFunc( mouseAction );
 
     glutMainLoop();

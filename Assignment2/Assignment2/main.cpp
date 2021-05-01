@@ -54,7 +54,6 @@ void cubeSideRotation( int delta ) {
     /* updates rotation matrix of rotating cubes and send to vshader */
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {
-            printf("%d",rotationAxis);
             if (rotationAxis == axisX) {
                 currPos = currentCubePos[currentBlock][i][j];
                 rotationMatrix[currPos] = RotateX(delta) * rotationMatrix[currPos];
@@ -389,14 +388,20 @@ int cubeSelector( int a, int b, int key ) {
     
     // Read point pixels from the frame buffer
     glReadPixels( a, b, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, point );
-
-    int k = (int)point[0];
-    int l = (int)point[1];
-    int m = (int)point[2];
+    unsigned char n = point[0];
+    unsigned char o = point[1];
+    unsigned char c = point[2];
+    printf("%d\n", n);
+    printf("%d\n", o);
+    printf("%d\n", c);
+    int k = point[0];
+    int l = point[1];
+    int m = point[2];
     k = ceil(k/64.0)-1;
     l = ceil(l/64.0)-1;
     m = ceil(m/64.0)-1;
-    cube = (k * 4) + (l * 2) + m;
+    cube = (k * 9) + (l * 3) + m;
+    printf("%d\n\n",cube);
 
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     
@@ -414,7 +419,7 @@ int cubeSelector( int a, int b, int key ) {
     glUniform1i( selectFace, 0 );
     glFlush();
 
-    // Retrieve point color from the back buffer
+    // Read point color from the frame buffer
     glReadPixels( a, b, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, point );
     
     k = (int)point[0];
@@ -695,7 +700,7 @@ int main( int agrc, char** agrv ) {
     glutInit( &agrc, agrv );
     glutInitDisplayMode( GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGBA | GLUT_3_2_CORE_PROFILE );
     glutInitWindowSize( 512, 512 );
-    glutInitWindowPosition( 100, 100 );
+    glutInitWindowPosition( 900, 10 );
     glutCreateWindow( "COMP410 Assignment 2" );
     
     #ifdef __APPLE__

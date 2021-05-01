@@ -52,8 +52,9 @@ void cubeSideRotation( int delta ) {
     int currPos = 0;
 
     /* updates rotation matrix of rotating cubes and send to vshader */
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
+    for (int i = 0; i < 2; i++) {
+        for (int j = 0; j < 2; j++) {
+            printf("%d",rotationAxis);
             if (rotationAxis == axisX) {
                 currPos = currentCubePos[currentBlock][i][j];
                 rotationMatrix[currPos] = RotateX(delta) * rotationMatrix[currPos];
@@ -71,9 +72,9 @@ void cubeSideRotation( int delta ) {
     rotatePhase = rotatePhase + delta;
     glutPostRedisplay();
     if (rotatePhase == 90) {
-        for (int k = 0 ; k < 3 ; k++) {
-            for (int l = 0 ; l < 3 ; l++) {
-                for (int m = 0 ; m < 3 ; m++) {
+        for (int k = 0 ; k < 2 ; k++) {
+            for (int l = 0 ; l < 2 ; l++) {
+                for (int m = 0 ; m < 2 ; m++) {
                     currentCubePos[k][l][m] = nextCubePos[k][l][m];
                 }
             }
@@ -87,36 +88,36 @@ void cubeSideRotation( int delta ) {
 // MARK: - Rotate Rubiks Cube
 
 void rubiksCubeRotation( int direction, int subcube, int axis ) {
-    int rotation[3][3];
+    int rotation[2][2];
     if (direction < 0) {
-        for (int i = 0 ; i < 3 ; i++) {
-            for (int j = 0; j < 3 ; j++) {
+        for (int i = 0 ; i < 2 ; i++) {
+            for (int j = 0; j < 2 ; j++) {
                 if (axis == axisX) {
-                    rotation[j][2-i] = nextCubePos[subcube][i][j];
+                    rotation[j][1-i] = nextCubePos[subcube][i][j];
                 } else if (axis == axisY) {
-                    rotation[2-j][i] = nextCubePos[i][subcube][j];
+                    rotation[1-j][i] = nextCubePos[i][subcube][j];
                 } else if (axis == axisZ) {
-                    rotation[j][2-i] = nextCubePos[i][j][subcube];
+                    rotation[j][1-i] = nextCubePos[i][j][subcube];
                 }
             }
         }
     } else {
-        for (int i = 0 ; i < 3 ; i++) {
-            for (int j = 0 ; j < 3 ; j++) {
+        for (int i = 0 ; i < 2 ; i++) {
+            for (int j = 0 ; j < 2 ; j++) {
                 if (axis == axisX) {
-                    rotation[2-j][i] = nextCubePos[subcube][i][j];
+                    rotation[1-j][i] = nextCubePos[subcube][i][j];
                 } else if (axis == axisY) {
-                    rotation[j][2-i] = nextCubePos[i][subcube][j];
+                    rotation[j][1-i] = nextCubePos[i][subcube][j];
                 } else if (axis == axisZ) {
-                    rotation[2-j][i] = nextCubePos[i][j][subcube];
+                    rotation[1-j][i] = nextCubePos[i][j][subcube];
                 }
             }
         }
     }
 
     /*copy back the transposed subcube to nextCubePos*/
-    for (int i = 0 ; i < 3 ; i++) {
-        for (int l = 0 ; l < 3 ; l++) {
+    for (int i = 0 ; i < 2 ; i++) {
+        for (int l = 0 ; l < 2 ; l++) {
             if (axis == axisX) {
                 nextCubePos[subcube][i][l] = rotation[i][l];
             } else if (axis == axisY) {
@@ -367,7 +368,7 @@ int cubeSelector( int a, int b, int key ) {
     int nextY = -1;
     int nextZ = -1;
     int temp = 0;
-    unsigned char point[4];
+    unsigned char point[3];
     int cube;
     int cubeVert = 0;
 
@@ -386,7 +387,7 @@ int cubeSelector( int a, int b, int key ) {
     glFlush();
     b = glutGet( GLUT_WINDOW_HEIGHT ) - b;
     
-    // Read point color from the back buffer
+    // Read point pixels from the frame buffer
     glReadPixels( a, b, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, point );
 
     int k = (int)point[0];
@@ -395,7 +396,7 @@ int cubeSelector( int a, int b, int key ) {
     k = ceil(k/64.0)-1;
     l = ceil(l/64.0)-1;
     m = ceil(m/64.0)-1;
-    cube = (k * 9) + (l * 3) + m;
+    cube = (k * 4) + (l * 2) + m;
 
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     
@@ -423,9 +424,9 @@ int cubeSelector( int a, int b, int key ) {
     l = ceil(l/255.0);
     m = ceil(m/255.0);
 
-    for (int i = 0 ; i < 3 ; i++) {
-        for (int j = 0 ; j < 3 ; j++) {
-            for (int k = 0 ; k < 3 ; k++) {
+    for (int i = 0 ; i < 2 ; i++) {
+        for (int j = 0 ; j < 2; j++) {
+            for (int k = 0 ; k < 2 ; k++) {
                 if (currentCubePos[i][j][k] == cube) {
                     nextX = i;
                     nextY = j;
@@ -627,7 +628,7 @@ void helpMenu() {
 
 // MARK: - Mouse
 
-void mouseAction( int key, int state, int x, int y ) {
+void mouse( int key, int state, int x, int y ) {
     int direction;
     
     if (state == GLUT_DOWN && rotatePhase == 0) {
@@ -649,7 +650,7 @@ void mouseAction( int key, int state, int x, int y ) {
 
 // MARK: - Arrow Keys
 
-void arrowKeysAction( int key, int a, int b ) {
+void arrowKeys ( int key, int a, int b ) {
     switch (key) {
         case GLUT_KEY_LEFT:
             rotateZ += 4;
@@ -709,8 +710,8 @@ int main( int agrc, char** agrv ) {
     glutDisplayFunc( display );
     glutKeyboardFunc( keyboard );
     glutReshapeFunc( reshape );
-    glutSpecialFunc( arrowKeysAction );
-    glutMouseFunc( mouseAction );
+    glutSpecialFunc( arrowKeys );
+    glutMouseFunc( mouse );
 
     glutMainLoop();
     return 0;

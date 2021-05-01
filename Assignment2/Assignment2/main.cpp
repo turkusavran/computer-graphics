@@ -369,17 +369,15 @@ int cubeSelector( int a, int b, int key ) {
     int temp = 0;
     unsigned char point[3];
     int cube;
-    int cubeVert = 0;
 
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     glUniform1i( selectCube, 1 );
 
-    while (cubeVert < numCubeVertices) {
-        glUniform1i( currentCube, cubeVert );
+    for (int i = 0 ; i < numCubeVertices ; i++) {
+        glUniform1i( currentCube, i );
         glDrawArrays( GL_TRIANGLES, temp, numOneCubeVertices );
         temp = temp + numOneCubeVertices;
-        cubeVert++;
     }
 
     glUniform1i( selectCube, 0 );
@@ -388,12 +386,6 @@ int cubeSelector( int a, int b, int key ) {
     
     // Read point pixels from the back buffer
     glReadPixels( a, b, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, point );
-    unsigned char n = point[0];
-    unsigned char o = point[1];
-    unsigned char c = point[2];
-    printf("%d\n", n);
-    printf("%d\n", o);
-    printf("%d\n", c);
     int k = point[0];
     int l = point[1];
     int m = point[2];
@@ -401,19 +393,16 @@ int cubeSelector( int a, int b, int key ) {
     l = ceil(l/64.0)-1;
     m = ceil(m/64.0)-1;
     cube = (k * 4) + (l * 2) + m;
-    printf("%d\n\n",cube);
 
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     
     glUniform1i( selectFace, 1 );
 
     temp = 0;
-    cubeVert = 0;
-    while (cubeVert < numCubeVertices) {
-        glUniform1i( currentCube, cubeVert );
+    for (int i = 0 ; i < numCubeVertices ; i++) {
+        glUniform1i( currentCube, i );
         glDrawArrays( GL_TRIANGLES, temp, numOneCubeVertices );
         temp = temp + numOneCubeVertices;
-        cubeVert++;
     }
 
     glUniform1i( selectFace, 0 );
@@ -452,7 +441,7 @@ int cubeSelector( int a, int b, int key ) {
 
 // MARK: - Randomly Initialize Cube
 
-void randomInitialization( int numRotations ) {
+/*void randomInitialization( int numRotations ) {
     int direction;
     int currentPos;
     srand((unsigned int)time(NULL));
@@ -488,7 +477,7 @@ void randomInitialization( int numRotations ) {
         }
     }
     rotatePhase = 0;
-}
+}*/
 
 // MARK: - Initialization
 
@@ -641,21 +630,20 @@ void mouse( int key, int state, int x, int y ) {
         the cube and face and returns the direction of rotation*/
         direction = cubeSelector(x, y, key);
         if (direction < 0) {
-          rubiksCubeRotation(direction, currentBlock, rotationAxis);
-          rotatePhase = 180;
-          cubeSideRotation(-5);
+            rubiksCubeRotation(direction, currentBlock, rotationAxis);
+            rotatePhase = 180;
+            cubeSideRotation(-5);
         } else if (direction > 0) {
-          rubiksCubeRotation(direction, currentBlock, rotationAxis);
-          rotatePhase = 0;
-          cubeSideRotation(5);
+            rubiksCubeRotation(direction, currentBlock, rotationAxis);
+            rotatePhase = 0;
+            cubeSideRotation(5);
         }
     }
 }
 
-
 // MARK: - Arrow Keys
 
-void arrowKeys ( int key, int a, int b ) {
+void arrowKeys( int key, int a, int b ) {
     switch (key) {
         case GLUT_KEY_LEFT:
             rotateZ += 4;
@@ -682,8 +670,8 @@ void keyboard( unsigned char key, int x, int y ) {
             rotateZ = -45.0;
             break;
         case 'r': case 'R':
-            //randominitialize
-            break;
+            //randomInitialization(5);
+            //break;
         case 'h': case 'H':
             helpMenu();
             break;

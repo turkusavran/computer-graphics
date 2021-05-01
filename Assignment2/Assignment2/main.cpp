@@ -386,7 +386,7 @@ int cubeSelector( int a, int b, int key ) {
     glFlush();
     b = glutGet( GLUT_WINDOW_HEIGHT ) - b;
     
-    // Read point pixels from the frame buffer
+    // Read point pixels from the back buffer
     glReadPixels( a, b, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, point );
     unsigned char n = point[0];
     unsigned char o = point[1];
@@ -400,7 +400,7 @@ int cubeSelector( int a, int b, int key ) {
     k = ceil(k/64.0)-1;
     l = ceil(l/64.0)-1;
     m = ceil(m/64.0)-1;
-    cube = (k * 9) + (l * 3) + m;
+    cube = (k * 4) + (l * 2) + m;
     printf("%d\n\n",cube);
 
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -419,7 +419,7 @@ int cubeSelector( int a, int b, int key ) {
     glUniform1i( selectFace, 0 );
     glFlush();
 
-    // Read point color from the frame buffer
+    // Read point color from the back buffer
     glReadPixels( a, b, 1, 1, GL_RGB, GL_UNSIGNED_BYTE, point );
     
     k = (int)point[0];

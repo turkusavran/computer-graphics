@@ -3,14 +3,17 @@
 in vec4 vPosition, vColor;
 
 uniform mat4 ModelView, Projection;
+uniform mat4 vRotation[8];
+uniform vec4 cubeColor[8];
 
-uniform mat4 vRotation[27];
-uniform vec4 cubeColor[27];
-uniform int currentCube, edge, selectFace, selectCube;
+uniform int currentCube;
+uniform int edge;
+uniform int selectFace;
+uniform int selectCube;
 
 out vec4 color;
 
-void positionChanger() {
+void changePosition() {
     if(selectFace == 1) {
         gl_Position = Projection * ModelView * vPosition;
     } else {
@@ -18,7 +21,7 @@ void positionChanger() {
     }
 }
 
-void colorChanger() {
+void changeColor() {
     if (selectCube == 1) {
         color = cubeColor[currentCube];
     } else if(edge == 1) {
@@ -29,6 +32,6 @@ void colorChanger() {
 }
 
 void main()  {
-    positionChanger();
-    colorChanger();
+    changePosition();
+    changeColor();
 }

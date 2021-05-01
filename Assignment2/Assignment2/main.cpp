@@ -116,13 +116,13 @@ void rubiksCubeRotation( int direction, int subcube, int axis ) {
 
     /*copy back the transposed subcube to nextCubePos*/
     for (int i = 0 ; i < 2 ; i++) {
-        for (int l = 0 ; l < 2 ; l++) {
+        for (int j = 0 ; j < 2 ; j++) {
             if (axis == axisX) {
-                nextCubePos[subcube][i][l] = rotation[i][l];
+                nextCubePos[subcube][i][j] = rotation[i][j];
             } else if (axis == axisY) {
-                nextCubePos[i][subcube][l] = rotation[i][l];
+                nextCubePos[i][subcube][j] = rotation[i][j];
             } else if (axis == axisZ) {
-                nextCubePos[i][l][subcube] = rotation[i][l];
+                nextCubePos[i][j][subcube] = rotation[i][j];
             }
         }
     }
@@ -454,34 +454,34 @@ int cubeSelector( int a, int b, int key ) {
 
 void randomInitialization( int numRotations ) {
     int direction;
-    int currPos;
-
+    int currentPos;
+    srand((unsigned int)time(NULL));
     for (int iter = 0 ; iter < numRotations ; iter++) {
-        currentBlock = rand() % 3;
-        rotationAxis = rand() % 3;
+        currentBlock = rand() % 2;
+        rotationAxis = rand() % 2;
         if(rand() % 2 == 1) {
             direction = 1;
         } else {
             direction = -1;
         }
         rubiksCubeRotation( direction, currentBlock, rotationAxis );
-        for (int i = 0 ; i < 3 ; i++) {
-            for (int j = 0 ; j < 3 ; j++) {
+        for (int i = 0 ; i < 2 ; i++) {
+            for (int j = 0 ; j < 2 ; j++) {
                 if (rotationAxis == axisX) {
-                    currPos = currentCubePos[currentBlock][i][j];
-                    rotationMatrix[currPos] = RotateX(direction*90)*rotationMatrix[currPos];
+                    currentPos = currentCubePos[currentBlock][i][j];
+                    rotationMatrix[currentPos] = RotateX(direction*90)*rotationMatrix[currentPos];
                 } else if (rotationAxis == axisY) {
-                    currPos = currentCubePos[i][currentBlock][j];
-                    rotationMatrix[currPos] = RotateY(direction*90)*rotationMatrix[currPos];
+                    currentPos = currentCubePos[i][currentBlock][j];
+                    rotationMatrix[currentPos] = RotateY(direction*90)*rotationMatrix[currentPos];
                 } else if (rotationAxis == axisZ) {
-                    currPos = currentCubePos[i][j][currentBlock];
-                    rotationMatrix[currPos] = RotateZ(direction*90)*rotationMatrix[currPos];
+                    currentPos = currentCubePos[i][j][currentBlock];
+                    rotationMatrix[currentPos] = RotateZ(direction*90)*rotationMatrix[currentPos];
                 }
             }
         }
-        for (int k=0 ; k < 3 ; k++) {
-            for (int l = 0 ; l < 3 ; l++) {
-                for (int m = 0 ; m < 3 ; m++) {
+        for (int k=0 ; k < 2 ; k++) {
+            for (int l = 0 ; l < 2 ; l++) {
+                for (int m = 0 ; m < 2 ; m++) {
                     currentCubePos[k][l][m] = nextCubePos[k][l][m];
                 }
             }
@@ -496,13 +496,13 @@ void init() {
     // Rubik's cube init
     rubiksCube();
     
-    // Randomize Rubik's cube
-    // randomInitialization(5);
-    
     // Initialize rotation matrix
     for (int i=0; i < numCubes; i++) {
         rotationMatrix[i] = RotateX(0);
     }
+    
+    // Randomize Rubik's cube
+    //randomInitialization(10);
     
     GLuint vao;
     glGenVertexArrays( 1, &vao );

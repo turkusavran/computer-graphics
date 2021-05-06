@@ -15,18 +15,18 @@ void rubiksCube() {
     color4 *color = new point4[numOneCubeVertices];
     
     // Create 8 sub cubes
-    for (int i = -1 ; i <= 0 ; i++) {
+    for (int i = 0 ; i <= 1 ; i++) {
         green = 0.0;
         red += 0.25;
-        for (int j = -1; j <= 0 ; j++) {
+        for (int j = 0; j <= 1 ; j++) {
             green += 0.25;
             blue = 0.0;
-            for (int k = -1 ; k <= 0 ; k++) {
+            for (int k = 0 ; k <= 1 ; k++) {
                 blue += 0.25;
                 cubeCreator( cube, color );
                 
                 // Cube translation
-                mat4 translation = Translate( vec3(i, j, k) );
+                mat4 translation = Translate( vec3(i-0.5, j-0.5, k-0.5) );
                 for (int i = 0; i < numOneCubeVertices ; i++) {
                     cube[i] = translation * cube[i];
                 }
@@ -36,8 +36,8 @@ void rubiksCube() {
                     vertices[current * numOneCubeVertices + m] = cube[m];
                     colors[current * numOneCubeVertices + m] = color[m];
                 }
-                nextCubePos[i+1][j+1][k+1] = current;
-                currentCubePos[i+1][j+1][k+1] = current;
+                nextCubePos[i][j][k] = current;
+                currentCubePos[i][j][k] = current;
                 
                 colorSelector[current] = color4(red, green, blue, 1.0);
                 current++;
@@ -319,6 +319,7 @@ int rotateAlong( int axis, int nextA, int nextB, int key ) {
             }
         }
     }
+    printf("rotateAlong: rotAxis: %d currBlock: %d rotation: %d\n",rotationAxis, currentBlock, rotation);
     return rotation;
 }
 
@@ -356,6 +357,7 @@ int performRotation( int currX, int currY, int currZ, int nextX, int nextY, int 
             }
         }
     }
+    printf("performRot: rotation: %d\n", rotation);
     return rotation;
 }
 
@@ -393,7 +395,7 @@ int cubeSelector( int a, int b, int key ) {
     l = ceil(l/64.0)-1;
     m = ceil(m/64.0)-1;
     cube = (k * 4) + (l * 2) + m;
-
+   
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     
     glUniform1i( selectFace, 1 );
@@ -417,7 +419,7 @@ int cubeSelector( int a, int b, int key ) {
     k = ceil(k/255.0);
     l = ceil(l/255.0);
     m = ceil(m/255.0);
-
+   
     for (int i = 0 ; i < 2 ; i++) {
         for (int j = 0 ; j < 2; j++) {
             for (int k = 0 ; k < 2 ; k++) {
@@ -430,8 +432,8 @@ int cubeSelector( int a, int b, int key ) {
             }
         }
     }
-
-    // Perform rotation with appropriate axes
+    printf("cubeSelect: currX-Y-X: %d %d %d, nextX-Y-Z %d %d %d\n", k,l,m,nextX,nextY,nextZ);
+    // Rotate with appropriate axes
     rotation = performRotation( k, l, m, nextX, nextY, nextZ, key );
     
     glutPostRedisplay();
@@ -552,7 +554,7 @@ void init() {
 void display() {
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     
-    const vec3 displacement( 0.5, -0.5, 0.5 );
+    const vec3 displacement( 0, 0, 0);
     mat4  model_view = ( Translate( displacement ) *
                         RotateX( Theta[axisX] + rotateX ) *
                         RotateY( Theta[axisY] ) *
@@ -581,8 +583,8 @@ void display() {
             temp++;
         }
         glUniform1i( currentCube, temp );
-        glDrawArrays( GL_LINE_STRIP, cubeVertices, 3 );
-        cubeVertices += 3;
+        glDrawArrays( GL_LINE_STRIP, cubeVertices, 2 );
+        cubeVertices += 2;
     }
     
     glUniform1i( edge, 0 );

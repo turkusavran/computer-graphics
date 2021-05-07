@@ -361,45 +361,27 @@ int cubeSelector( int a, int b, int key ) {
     return direction;
 }
 
-// MARK: - Randomly Initialize Cube
+// MARK: - Randomize Cube
 
-/*void randomInitialization( int numRotations ) {
+void randomizeCube(int a) {
     int direction;
-    int currentPos;
+    
     srand((unsigned int)time(NULL));
-    for (int iter = 0 ; iter < numRotations ; iter++) {
-        currentBlock = rand() % 2;
-        rotationAxis = rand() % 2;
-        if(rand() % 2 == 1) {
-            direction = 1;
-        } else {
-            direction = -1;
-        }
-        setNextPositions( direction, currentBlock, rotationAxis );
-        for (int i = 0 ; i < 2 ; i++) {
-            for (int j = 0 ; j < 2 ; j++) {
-                if (rotationAxis == axisX) {
-                    currentPos = currentCubePos[currentBlock][i][j];
-                    rotationMatrix[currentPos] = RotateX(direction*90)*rotationMatrix[currentPos];
-                } else if (rotationAxis == axisY) {
-                    currentPos = currentCubePos[i][currentBlock][j];
-                    rotationMatrix[currentPos] = RotateY(direction*90)*rotationMatrix[currentPos];
-                } else if (rotationAxis == axisZ) {
-                    currentPos = currentCubePos[i][j][currentBlock];
-                    rotationMatrix[currentPos] = RotateZ(direction*90)*rotationMatrix[currentPos];
-                }
-            }
-        }
-        for (int k=0 ; k < 2 ; k++) {
-            for (int l = 0 ; l < 2 ; l++) {
-                for (int m = 0 ; m < 2 ; m++) {
-                    currentCubePos[k][l][m] = nextCubePos[k][l][m];
-                }
-            }
-        }
+    currentBlock = rand() % 2;
+    rotationAxis = rand() % 2;
+    
+    if(rand() % 2 == 1) {
+        direction = 1;
+        setNextPositions(direction, currentBlock, rotationAxis);
+        rotateAngle = 0;
+        rotateCube(5);
+    } else {
+        direction = -1;
+        setNextPositions(direction, currentBlock, rotationAxis);
+        rotateAngle = 180;
+        rotateCube(-5);
     }
-    rotateAngle = 0;
-}*/
+}
 
 // MARK: - Initialization
 
@@ -413,7 +395,7 @@ void init() {
     }
     
     // Randomize Rubik's cube
-    //randomInitialization(10);
+    //randomizeCube(10);
     
     GLuint vao;
     glGenVertexArrays( 1, &vao );
@@ -589,8 +571,13 @@ void keyboard( unsigned char key, int x, int y ) {
             aspectZ = -45.0;
             break;
         case 'r': case 'R':
-            //randomInitialization(5);
-            //break;
+            randomizeCube(0);
+            glutTimerFunc(2400, randomizeCube, 0);
+            glutTimerFunc(1800, randomizeCube, 0);
+            glutTimerFunc(1200, randomizeCube, 0);
+            glutTimerFunc(600, randomizeCube, 0);
+            
+           // break;
         case 'h': case 'H':
             helpMenu();
             break;

@@ -60,7 +60,7 @@ int performRotation(int currentX, int currentY, int currentZ, int nextX, int nex
 int setParameters(int axis, int firstAxis, int secondAxis, int key);
 void cubeCreator(point4 *cube, color4 *color);
 void rubiksCube();
-void randomInitialization(int numRotations);
+void randomizeCube(int a);
 void setNextPositions(int direction, int subcube, int axis);
 void quad( point4 *cube, point4 *vertices, int a, int b, int c, int d );
 

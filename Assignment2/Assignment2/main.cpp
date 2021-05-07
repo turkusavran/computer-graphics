@@ -47,7 +47,7 @@ void rubiksCube() {
 }
 
 // MARK: - Rotate the cube
-// Rotate face by angle
+
 void rotateCube( int angle ) {
     int currentPos = 0;
 
@@ -133,7 +133,7 @@ void setNextPositions( int direction, int subcube, int axis ) {
 int setParameters( int axis, int firstAxis, int secondAxis, int key ) {
     int direction = 0;
 
-    // Rotate along X
+    // Rotate on X axis
     if (axis == axisX) {
         if (secondAxis == 0) {
             currentBlock = 0;
@@ -172,7 +172,7 @@ int setParameters( int axis, int firstAxis, int secondAxis, int key ) {
                 }
             }
         }
-    // Rotate along Y
+    // Rotate on Y axis
     } else if (axis == axisY) {
         if (firstAxis == 0) {
             direction = 1;
@@ -211,7 +211,7 @@ int setParameters( int axis, int firstAxis, int secondAxis, int key ) {
                 }
             }
         }
-    // Rotate along Z
+    // Rotate on Z axis
     } else if (axis == axisZ) {
         if (firstAxis == 0) {
             currentBlock = 0;
@@ -368,7 +368,7 @@ void randomizeCube(int a) {
     
     srand((unsigned int)time(NULL));
     currentBlock = rand() % 2;
-    rotationAxis = rand() % 2;
+    rotationAxis = rand() % 3;
     
     if(rand() % 2 == 1) {
         direction = 1;
@@ -534,11 +534,11 @@ void mouse( int key, int state, int x, int y ) {
     if (state == GLUT_DOWN && rotateAngle == 0) {
         // Set the current block, rotation axis and direction
         direction = cubeSelector(x, y, key);
-        if (direction < 0) {
+        if (direction == -1) {
             setNextPositions(direction, currentBlock, rotationAxis);
             rotateAngle = 180;
             rotateCube(-5);
-        } else if (direction > 0) {
+        } else if (direction == 1) {
             setNextPositions(direction, currentBlock, rotationAxis);
             rotateAngle = 0;
             rotateCube(5);

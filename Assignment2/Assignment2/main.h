@@ -65,17 +65,17 @@ void setNextPositions(int direction, int subcube, int axis);
 void quad( point4 *cube, point4 *vertices, int a, int b, int c, int d );
 
 // MARK: - Cube Vertices
-void cubeCreator(point4 *cube, color4 *color) {
-	point4 vertices[8];
+void cubeCreator(point4 *pointsCube, color4 *color) {
+	point4 verticesCube[8];
 
-	vertices[0] = point4(-0.5, 0.5, -0.5, 1.0);
-	vertices[1] = point4(-0.5, 0.5, 0.5, 1.0);
-	vertices[2] = point4(0.5, 0.5, 0.5, 1.0);
-	vertices[3] = point4(0.5, 0.5, -0.5, 1.0);
-	vertices[4] = point4(-0.5, -0.5, -0.5, 1.0);
-	vertices[5] = point4(-0.5, -0.5, 0.5, 1.0);
-	vertices[6] = point4(0.5, -0.5, 0.5, 1.0);
-	vertices[7] = point4(0.5, -0.5, -0.5, 1.0);
+	verticesCube[0] = point4(-0.5, 0.5, -0.5, 1.0);
+	verticesCube[1] = point4(-0.5, 0.5, 0.5, 1.0);
+	verticesCube[2] = point4(0.5, 0.5, 0.5, 1.0);
+	verticesCube[3] = point4(0.5, 0.5, -0.5, 1.0);
+	verticesCube[4] = point4(-0.5, -0.5, -0.5, 1.0);
+	verticesCube[5] = point4(-0.5, -0.5, 0.5, 1.0);
+	verticesCube[6] = point4(0.5, -0.5, 0.5, 1.0);
+	verticesCube[7] = point4(0.5, -0.5, -0.5, 1.0);
 
 	for (int i = 0 ; i < 6 ; i++) {
 		color[i] = color4(1.0,0.0,0.0,1.0);     // red
@@ -86,47 +86,47 @@ void cubeCreator(point4 *cube, color4 *color) {
 		color[i+30] = color4(1.0,0.0,1.0,1.0);  // magenta
 	}
 
-	cube[0] = vertices[0];
-	cube[1] = vertices[1];
-	cube[2] = vertices[2];
-	cube[3] = vertices[2];
-	cube[4] = vertices[3];
-	cube[5] = vertices[0];
+	pointsCube[0] = verticesCube[0];
+	pointsCube[1] = verticesCube[1];
+	pointsCube[2] = verticesCube[2];
+	pointsCube[3] = verticesCube[2];
+	pointsCube[4] = verticesCube[3];
+	pointsCube[5] = verticesCube[0];
 
-	cube[6] = vertices[4];
-	cube[7] = vertices[5];
-	cube[8] = vertices[6];
-	cube[9] = vertices[6];
-	cube[10] = vertices[7];
-	cube[11] = vertices[4];
+	pointsCube[6] = verticesCube[4];
+	pointsCube[7] = verticesCube[5];
+	pointsCube[8] = verticesCube[6];
+	pointsCube[9] = verticesCube[6];
+	pointsCube[10] = verticesCube[7];
+	pointsCube[11] = verticesCube[4];
 
-	cube[12] = vertices[0];
-	cube[13] = vertices[3];
-	cube[14] = vertices[7];
-	cube[15] = vertices[7];
-	cube[16] = vertices[4];
-	cube[17] = vertices[0];
+	pointsCube[12] = verticesCube[0];
+	pointsCube[13] = verticesCube[3];
+	pointsCube[14] = verticesCube[7];
+	pointsCube[15] = verticesCube[7];
+	pointsCube[16] = verticesCube[4];
+	pointsCube[17] = verticesCube[0];
 
-	cube[18] = vertices[1];
-	cube[19] = vertices[2];
-	cube[20] = vertices[6];
-	cube[21] = vertices[6];
-	cube[22] = vertices[5];
-	cube[23] = vertices[1];
+	pointsCube[18] = verticesCube[1];
+	pointsCube[19] = verticesCube[2];
+	pointsCube[20] = verticesCube[6];
+	pointsCube[21] = verticesCube[6];
+	pointsCube[22] = verticesCube[5];
+	pointsCube[23] = verticesCube[1];
 
-	cube[24] = vertices[0];
-	cube[25] = vertices[1];
-	cube[26] = vertices[5];
-	cube[27] = vertices[5];
-	cube[28] = vertices[4];
-	cube[29] = vertices[0];
+	pointsCube[24] = verticesCube[0];
+	pointsCube[25] = verticesCube[1];
+	pointsCube[26] = verticesCube[5];
+	pointsCube[27] = verticesCube[5];
+	pointsCube[28] = verticesCube[4];
+	pointsCube[29] = verticesCube[0];
 
-	cube[30] = vertices[3];
-	cube[31] = vertices[2];
-	cube[32] = vertices[6];
-	cube[33] = vertices[6];
-	cube[34] = vertices[7];
-	cube[35] = vertices[3];
+	pointsCube[30] = verticesCube[3];
+	pointsCube[31] = verticesCube[2];
+	pointsCube[32] = verticesCube[6];
+	pointsCube[33] = verticesCube[6];
+	pointsCube[34] = verticesCube[7];
+	pointsCube[35] = verticesCube[3];
 }
 
 

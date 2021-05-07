@@ -270,15 +270,11 @@ int rotateAlong( int axis, int nextA, int nextB, int key ) {
                     rotation = 1;
                 }
             } else if (nextB == 1) {
-                rotationAxis = axisY;
-                currentBlock = 1;
-                rotation = 1;
-            } else if (nextB == 2) {
                 if (key == GLUT_LEFT_BUTTON){
                     currentBlock = 0;
                     rotationAxis = axisX;
                 } else if (key == GLUT_RIGHT_BUTTON) {
-                    currentBlock = 2;
+                    currentBlock = 1;
                     rotationAxis = axisY;
                 }
                 rotation = 1;
@@ -330,10 +326,12 @@ int performRotation( int currX, int currY, int currZ, int nextX, int nextY, int 
     if (currX == 0) {
         if (currY == 0) {
             if (currZ == 1) {
+                //done
                 rotation = rotateAlong( axisX, nextY, nextZ, key );
             }
         } else if (currY == 1) {
             if (currZ == 0) {
+                //done
                 rotation = rotateAlong( axisZ, nextX, nextY, key );
             } else if (currZ == 1) {
                 rotation = rotateAlong( axisZ, nextX, nextY, key );
@@ -583,8 +581,8 @@ void display() {
             temp++;
         }
         glUniform1i( currentCube, temp );
-        glDrawArrays( GL_LINE_STRIP, cubeVertices, 2 );
-        cubeVertices += 2;
+        glDrawArrays( GL_LINE_STRIP, cubeVertices, 3 );
+        cubeVertices += 3;
     }
     
     glUniform1i( edge, 0 );

@@ -50,8 +50,8 @@ int currentCube;
 int vRotation[numCubes];
 
 // Variable for the shader
-int selectCube;
-int selectFace;
+int selectedCube;
+int selectedFace;
 int cubeColor[numCubes];
 
 int cubeSelector(int x, int y, int button);

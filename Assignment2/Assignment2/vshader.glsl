@@ -8,13 +8,13 @@ uniform vec4 cubeColor[8];
 
 uniform int currentCube;
 uniform int edge;
-uniform int selectFace;
-uniform int selectCube;
+uniform int selectedFace;
+uniform int selectedCube;
 
 out vec4 color;
 
 void changePosition() {
-    if(selectFace == 1) {
+    if(selectedFace == 1) {
         gl_Position = Projection * ModelView * vPosition;
     } else {
         gl_Position = Projection * ModelView * vRotation[currentCube] * vPosition;
@@ -22,7 +22,7 @@ void changePosition() {
 }
 
 void changeColor() {
-    if (selectCube == 1) {
+    if (selectedCube == 1) {
         color = cubeColor[currentCube];
     } else if(edge == 1) {
         color = vec4(0.0,0.0,0.0,1.0);

@@ -47,11 +47,11 @@ void rubiksCube() {
 }
 
 // MARK: - Rotate S
-/* Rotate the slab by angle delta */
+// Rotate face by angle delta
 void cubeSideRotation( int delta ) {
     int currPos = 0;
 
-    /* updates rotation matrix of rotating cubes and send to vshader */
+    // Update rotation matrix
     for (int i = 0; i < 2; i++) {
         for (int j = 0; j < 2; j++) {
             if (rotationAxis == axisX) {
@@ -128,142 +128,129 @@ void rubiksCubeRotation( int direction, int subcube, int axis ) {
     }
 }
 
-// MARK: - Rotate the Side Along the Axis
+// MARK: - Set current block, rotation axis and rotation
 
 int rotateAlong( int axis, int nextA, int nextB, int key ) {
     int rotation = 0;
 
-    /* Rotation Along X*/
+    // Rotate along X
     if (axis == axisX) {
         if (nextB == 0) {
+            currentBlock = 0;
+            rotation = -1;
             if (nextA == 0) {
-                currentBlock = 0;
                 if (key == GLUT_LEFT_BUTTON) {
                     rotationAxis = axisZ;
                     rotation = 1;
                 } else if (key == GLUT_RIGHT_BUTTON) {
                     rotationAxis = axisY;
-                    rotation = -1;
                 }
             } else if (nextA == 1) {
                 if (key == GLUT_LEFT_BUTTON) {
-                    currentBlock = 0;
                     rotationAxis = axisZ;
                 } else if (key == GLUT_RIGHT_BUTTON) {
                     currentBlock = 1;
                     rotationAxis = axisY;
                 }
-                rotation = -1;
             }
         } else if (nextB == 1) {
+            currentBlock = 1;
+            rotation = 1;
             if (nextA == 0) {
                 if (key == GLUT_LEFT_BUTTON) {
-                    currentBlock = 1;
                     rotationAxis = axisZ;
                 } else if (key == GLUT_RIGHT_BUTTON) {
                     currentBlock = 0;
                     rotationAxis = axisY;
                 }
-                rotation = 1;
             } else if (nextA == 1) {
-                currentBlock = 1;
                 if (key == GLUT_LEFT_BUTTON) {
                     rotationAxis = axisZ;
                     rotation = -1;
                 } else if (key == GLUT_RIGHT_BUTTON) {
                     rotationAxis = axisY;
-                    rotation = 1;
                 }
             }
         }
-    /* Rotation Along Y*/
+    // Rotate along Y
     } else if (axis == axisY) {
         if (nextA == 0) {
+            rotation = 1;
+            currentBlock = 0;
             if (nextB == 0) {
-                currentBlock = 0;
                 if (key == GLUT_LEFT_BUTTON) {
                     rotationAxis = axisZ;
                     rotation = -1;
                 } else if (key == GLUT_RIGHT_BUTTON) {
                     rotationAxis = axisX;
-                    rotation = 1;
                 }
             } else if (nextB == 1) {
                 if (key == GLUT_LEFT_BUTTON) {
-                    currentBlock = 0;
                     rotationAxis = axisZ;
                 } else if (key == GLUT_RIGHT_BUTTON) {
                     currentBlock = 1;
                     rotationAxis = axisX;
                 }
-                rotation = 1;
             }
         } else if (nextA == 1) {
+            rotation = -1;
+            currentBlock = 1;
             if (nextB == 0) {
                 if (key == GLUT_LEFT_BUTTON) {
-                    currentBlock = 1;
                     rotationAxis = axisZ;
                 } else if(key == GLUT_RIGHT_BUTTON) {
                     currentBlock = 0;
                     rotationAxis = axisX;
                 }
-                rotation = -1;
             } else if (nextB == 1) {
-                currentBlock = 1;
                 if (key == GLUT_LEFT_BUTTON) {
                     rotationAxis = axisZ;
                     rotation = 1;
                 } else if (key == GLUT_RIGHT_BUTTON){
                     rotationAxis = axisX;
-                    rotation = -1;
                 }
             }
         }
-    /* Rotation Along Z */
+    // Rotate along Z
     } else if (axis == axisZ) {
         if (nextA == 0) {
+            currentBlock = 0;
+            rotation = 1;
             if (nextB == 0) {
-                currentBlock = 0;
                 if (key == GLUT_LEFT_BUTTON) {
                     rotationAxis = axisX;
                     rotation = -1;
                 } else if (key == GLUT_RIGHT_BUTTON) {
                     rotationAxis = axisY;
-                    rotation = 1;
                 }
             } else if (nextB == 1) {
                 if (key == GLUT_LEFT_BUTTON){
-                    currentBlock = 0;
                     rotationAxis = axisX;
                 } else if (key == GLUT_RIGHT_BUTTON) {
                     currentBlock = 1;
                     rotationAxis = axisY;
                 }
-                rotation = 1;
             }
-        }  else if (nextA == 1) {
+        } else if (nextA == 1) {
+            rotation = -1;
+            currentBlock = 1;
             if (nextB == 0) {
                 if (key == GLUT_LEFT_BUTTON) {
-                    currentBlock = 1;
                     rotationAxis = axisX;
                 } else if (key == GLUT_RIGHT_BUTTON) {
                     currentBlock = 0;
                     rotationAxis = axisY;
                 }
-                rotation = -1;
             } else if (nextB == 1) {
-                currentBlock = 1;
                 if (key == GLUT_LEFT_BUTTON) {
                     rotationAxis = axisX;
                     rotation = 1;
                 } else if (key == GLUT_RIGHT_BUTTON) {
                     rotationAxis = axisY;
-                    rotation = -1;
                 }
             }
         }
     }
-    printf("rotateAlong: rotAxis: %d currBlock: %d rotation: %d\n",rotationAxis, currentBlock, rotation);
     return rotation;
 }
 
@@ -274,12 +261,10 @@ int performRotation( int currX, int currY, int currZ, int nextX, int nextY, int 
     if (currX == 0) {
         if (currY == 0) {
             if (currZ == 1) {
-                //done
                 rotation = rotateAlong( axisX, nextY, nextZ, key );
             }
         } else if (currY == 1) {
             if (currZ == 0) {
-                //done
                 rotation = rotateAlong( axisZ, nextX, nextY, key );
             } else if (currZ == 1) {
                 rotation = rotateAlong( axisZ, nextX, nextY, key );
@@ -303,7 +288,6 @@ int performRotation( int currX, int currY, int currZ, int nextX, int nextY, int 
             }
         }
     }
-    printf("performRot: rotation: %d\n", rotation);
     return rotation;
 }
 
@@ -320,7 +304,7 @@ int cubeSelector( int a, int b, int key ) {
 
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-    glUniform1i( selectCube, 1 );
+    glUniform1i( selectedCube, 1 );
 
     for (int i = 0 ; i < numCubeVertices ; i++) {
         glUniform1i( currentCube, i );
@@ -328,7 +312,7 @@ int cubeSelector( int a, int b, int key ) {
         temp = temp + numOneCubeVertices;
     }
 
-    glUniform1i( selectCube, 0 );
+    glUniform1i( selectedCube, 0 );
     glFlush();
     b = glutGet( GLUT_WINDOW_HEIGHT ) - b;
     
@@ -337,14 +321,14 @@ int cubeSelector( int a, int b, int key ) {
     int k = point[0];
     int l = point[1];
     int m = point[2];
-    k = ceil(k/64.0)-1;
-    l = ceil(l/64.0)-1;
-    m = ceil(m/64.0)-1;
+    k = ceil(k/64.0) - 1;
+    l = ceil(l/64.0) - 1;
+    m = ceil(m/64.0) - 1;
     cube = (k * 4) + (l * 2) + m;
    
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
     
-    glUniform1i( selectFace, 1 );
+    glUniform1i( selectedFace, 1 );
 
     temp = 0;
     for (int i = 0 ; i < numCubeVertices ; i++) {
@@ -353,7 +337,7 @@ int cubeSelector( int a, int b, int key ) {
         temp = temp + numOneCubeVertices;
     }
 
-    glUniform1i( selectFace, 0 );
+    glUniform1i( selectedFace, 0 );
     glFlush();
 
     // Read point color from the back buffer
@@ -378,7 +362,7 @@ int cubeSelector( int a, int b, int key ) {
             }
         }
     }
-    printf("cubeSelect: currX-Y-X: %d %d %d, nextX-Y-Z %d %d %d\n", k,l,m,nextX,nextY,nextZ);
+   
     // Rotate with appropriate axes
     rotation = performRotation( k, l, m, nextX, nextY, nextZ, key );
     
@@ -470,8 +454,8 @@ void init() {
     Projection = glGetUniformLocation( program, "Projection" );
     currentCube = glGetUniformLocation( program, "currentCube" );
     edge = glGetUniformLocation( program, "edge" );
-    selectCube = glGetUniformLocation( program, "selectCube" );
-    selectFace = glGetUniformLocation( program, "selectFace" );
+    selectedCube = glGetUniformLocation( program, "selectedCube" );
+    selectedFace = glGetUniformLocation( program, "selectedFace" );
 
     // Send cube to the shader
     int cubes = 0;
@@ -488,8 +472,8 @@ void init() {
     glUseProgram( program ) ;
     glUniform1i( edge, 0 );
     glUniform1i( currentCube, 0 );
-    glUniform1i( selectCube, 0 );
-    glUniform1i( selectFace, 0 );
+    glUniform1i( selectedCube, 0 );
+    glUniform1i( selectedFace, 0 );
     glEnable( GL_DEPTH_TEST | GL_LINE_SMOOTH );
     glLineWidth( 4.0 );
     glClearColor( 1.0, 1.0, 1.0, 1.0 );
@@ -546,9 +530,9 @@ void reshape( int width, int height ) {
     mat4 projection;
     
     if (width <= height)
-      projection = Ortho( -4, 4, -4/(GLfloat(width)/height ), 4/(GLfloat(width)/height), -4, 4);
+      projection = Ortho( -4, 4, -4 * ((GLfloat)height/width), 4 * ((GLfloat)height/width), -4, 4);
     else
-      projection = Ortho( -4*(GLfloat(width)/height ), 4*(GLfloat(width)/height), -4, 4, -4, 4);
+      projection = Ortho( -4 * ((GLfloat)width/height), 4 * ((GLfloat)width/height), -4, 4, -4, 4);
 
     glUniformMatrix4fv( Projection, 1, GL_TRUE, projection );
 }
@@ -556,13 +540,11 @@ void reshape( int width, int height ) {
 // MARK: - Help Menu
 
 void helpMenu() {
-    printf("Press arrow keys to rotate the cube\n");
+    printf("Press arrow keys to change the view\n");
     printf("Click to move the faces of the cube\n");
-    printf(" - For a vertical rotation, perform a right-click\n");
-    printf(" - For a horizontal rotation, perform a left-click\n");
+    printf(" 1. For a vertical rotation, perform a right-click\n");
+    printf(" 2. For a horizontal rotation, perform a left-click\n");
     printf("Press r or R to randomize the Rubik's cube\n");
-    printf("Press z or Z to zoom in the cube\n");
-    printf("Press x or X to zoom out the cube\n");
     printf("Press i or I  to go to the initial position\n");
     printf("Press h or H for help\n");
     printf("Press q or Q to exit\n\n");
@@ -574,8 +556,7 @@ void mouse( int key, int state, int x, int y ) {
     int direction;
     
     if (state == GLUT_DOWN && rotatePhase == 0) {
-        /*Set the currentBlock and rotationAxis after picking
-        the cube and face and returns the direction of rotation*/
+        // Set the current block, rotation axis and direction
         direction = cubeSelector(x, y, key);
         if (direction < 0) {
             rubiksCubeRotation(direction, currentBlock, rotationAxis);

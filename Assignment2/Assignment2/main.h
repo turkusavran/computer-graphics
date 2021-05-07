@@ -79,7 +79,7 @@ void cubeCreator(point4 *cube, color4 *color) {
 
 	for (int i = 0 ; i < 6 ; i++) {
 		color[i] = color4(1.0,0.0,0.0,1.0);     // red
-		color[i+6] = color4(1.0,1.0,0.0,1.0);   // yellow
+        color[i+6] = color4(1.0,1.0,0.0,1.0);   // yellow
 		color[i+12] = color4(0.0,1.0,0.0,1.0);  // green
 		color[i+18] = color4(0.0,1.0,1.0,1.0);  // cyan
 		color[i+24] = color4(0.0,0.0,1.0,1.0);  // blue

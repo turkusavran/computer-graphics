@@ -395,7 +395,11 @@ void init() {
     }
     
     // Randomize Rubik's cube
-    //randomizeCube(10);
+    glutTimerFunc(4300, randomizeCube, 0);
+    glutTimerFunc(3600, randomizeCube, 0);
+    glutTimerFunc(2900, randomizeCube, 0);
+    glutTimerFunc(2200, randomizeCube, 0);
+    glutTimerFunc(1500, randomizeCube, 0);
     
     GLuint vao;
     glGenVertexArrays( 1, &vao );
@@ -512,12 +516,12 @@ void reshape( int width, int height ) {
 // MARK: - Help Menu
 
 void helpMenu() {
-    printf("Press arrow keys to change the view\n");
+    printf("Press arrow keys to change the view aspect\n");
     printf("Click to move the faces of the cube\n");
     printf(" 1. For a vertical rotation, perform a right-click\n");
     printf(" 2. For a horizontal rotation, perform a left-click\n");
     printf("Press r or R to randomize the Rubik's cube\n");
-    printf("Press i or I  to go to the initial position\n");
+    printf("Press i or I  to go to the initial view aspect\n");
     printf("Press h or H for help\n");
     printf("Press q or Q to exit\n\n");
 }

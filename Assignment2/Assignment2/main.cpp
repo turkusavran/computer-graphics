@@ -146,33 +146,19 @@ int rotateAlong( int axis, int nextA, int nextB, int key ) {
                     rotation = -1;
                 }
             } else if (nextA == 1) {
-                rotationAxis = axisY;
-                currentBlock = 1;
-                rotation = -1;
-            } else if (nextA == 2) {
                 if (key == GLUT_LEFT_BUTTON) {
                     currentBlock = 0;
                     rotationAxis = axisZ;
                 } else if (key == GLUT_RIGHT_BUTTON) {
-                    currentBlock = 2;
+                    currentBlock = 1;
                     rotationAxis = axisY;
                 }
                 rotation = -1;
             }
         } else if (nextB == 1) {
             if (nextA == 0) {
-                rotationAxis = axisZ;
-                currentBlock = 1;
-                rotation = 1;
-            } else if (nextA == 2) {
-                rotationAxis = axisZ;
-                currentBlock = 1;
-                rotation = -1;
-            }
-        } else if (nextB == 2) {
-            if (nextA == 0) {
                 if (key == GLUT_LEFT_BUTTON) {
-                    currentBlock = 2;
+                    currentBlock = 1;
                     rotationAxis = axisZ;
                 } else if (key == GLUT_RIGHT_BUTTON) {
                     currentBlock = 0;
@@ -180,11 +166,7 @@ int rotateAlong( int axis, int nextA, int nextB, int key ) {
                 }
                 rotation = 1;
             } else if (nextA == 1) {
-                rotationAxis = axisY;
                 currentBlock = 1;
-                rotation = 1;
-            } else if (nextA == 2) {
-                currentBlock = 2;
                 if (key == GLUT_LEFT_BUTTON) {
                     rotationAxis = axisZ;
                     rotation = -1;
@@ -207,35 +189,19 @@ int rotateAlong( int axis, int nextA, int nextB, int key ) {
                     rotation = 1;
                 }
             } else if (nextB == 1) {
-                rotationAxis = axisX;
-                currentBlock = 1;
-                rotation = 1;
-            } else if (nextB == 2) {
                 if (key == GLUT_LEFT_BUTTON) {
                     currentBlock = 0;
                     rotationAxis = axisZ;
                 } else if (key == GLUT_RIGHT_BUTTON) {
-                    currentBlock = 2;
+                    currentBlock = 1;
                     rotationAxis = axisX;
                 }
                 rotation = 1;
             }
         } else if (nextA == 1) {
             if (nextB == 0) {
-                rotationAxis = axisZ;
-                currentBlock = 1;
-                rotation = -1;
-            } else if (nextB == 1) {
-
-            } else if (nextB == 2) {
-                rotationAxis = axisZ;
-                currentBlock = 1;
-                rotation = 1;
-            }
-        } else if (nextA == 2) {
-            if (nextB == 0) {
                 if (key == GLUT_LEFT_BUTTON) {
-                    currentBlock = 2;
+                    currentBlock = 1;
                     rotationAxis = axisZ;
                 } else if(key == GLUT_RIGHT_BUTTON) {
                     currentBlock = 0;
@@ -243,11 +209,7 @@ int rotateAlong( int axis, int nextA, int nextB, int key ) {
                 }
                 rotation = -1;
             } else if (nextB == 1) {
-                rotationAxis = axisX;
                 currentBlock = 1;
-                rotation = -1;
-            } else if (nextB == 2) {
-                currentBlock = 2;
                 if (key == GLUT_LEFT_BUTTON) {
                     rotationAxis = axisZ;
                     rotation = 1;
@@ -279,20 +241,10 @@ int rotateAlong( int axis, int nextA, int nextB, int key ) {
                 }
                 rotation = 1;
             }
-        } else if (nextA == 1) {
-            if (nextB == 0) {
-                rotationAxis = axisX;
-                currentBlock = 1;
-                rotation = -1;
-            } else if (nextB == 2) {
-                rotationAxis = axisX;
-                currentBlock = 1;
-                rotation = 1;
-            }
-        } else if (nextA == 2) {
+        }  else if (nextA == 1) {
             if (nextB == 0) {
                 if (key == GLUT_LEFT_BUTTON) {
-                    currentBlock = 2;
+                    currentBlock = 1;
                     rotationAxis = axisX;
                 } else if (key == GLUT_RIGHT_BUTTON) {
                     currentBlock = 0;
@@ -300,11 +252,7 @@ int rotateAlong( int axis, int nextA, int nextB, int key ) {
                 }
                 rotation = -1;
             } else if (nextB == 1) {
-                rotationAxis = axisY;
                 currentBlock = 1;
-                rotation = -1;
-            } else if (nextB == 2) {
-                currentBlock = 2;
                 if (key == GLUT_LEFT_BUTTON) {
                     rotationAxis = axisX;
                     rotation = 1;

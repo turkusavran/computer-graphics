@@ -13,11 +13,9 @@ typedef vec4  color4;
 typedef vec4  point4;
 typedef vec2  point2;
 
-int WINDOW_WIDTH = 512;
-int WINDOW_HEIGHT = 512;
 double SCALE_FACTOR = 1.0;
 
-// For right click menu
+// Right click menu initialization
 GLint menuProjectionMode, menuDrawingMode, menuBackColor, menuShading, menuPhong;
 GLint menuLightMovement, menuLightSwitch, menuMaterialType, menuLightColor;
 enum {OrthographicProjectionMode = 0, PerspectiveProjectionMode = 1};
@@ -78,86 +76,91 @@ color4 ambientP = LightColor * material_ambient;
 color4 diffuseP = LightColor * material_diffuse;
 color4 specularP = LightColor * material_specular;
 
-//----------------------------------------------------------------------------
+// MARK: - Sphere
 
-// OpenGL initialization
+const int NumTimesToSubdivide = 5;
+const int NumTrianglesSphere = 4096;
+const int NumVerticesSphere = 3 * NumTrianglesSphere;
+
+point4 pointsSphere[NumVerticesSphere];
+vec3 normals[NumVerticesSphere];
+
+void triangle( const point4& a, const point4& b, const point4& c ) {
+    vec3 normal = normalize( cross(b - a, c - b) );
+    normals[IndexSphere] = normal; pointsSphere[IndexSphere] = a; IndexSphere++;
+    normals[IndexSphere] = normal; pointsSphere[IndexSphere] = b; IndexSphere++;
+    normals[IndexSphere] = normal; pointsSphere[IndexSphere] = c; IndexSphere++;
+}
+
+point4 unit( const point4& p ) {
+    float len = p.x*p.x + p.y*p.y + p.z*p.z;
+    point4 t;
+    if ( len > DivideByZeroTolerance ) {
+        t = p / sqrt(len);
+        t.w = 1.0;
+    }
+    return t;
+}
+
+void divide_triangle( const point4& a, const point4& b,
+                     const point4& c, int count )
+{
+    if ( count > 0 ) {
+        point4 v1 = unit( a + b );
+        point4 v2 = unit( a + c );
+        point4 v3 = unit( b + c );
+        divide_triangle( a, v1, v2, count - 1 );
+        divide_triangle( c, v2, v3, count - 1 );
+        divide_triangle( b, v3, v1, count - 1 );
+        divide_triangle( v1, v3, v2, count - 1 );
+    }
+    else {
+        triangle( a, b, c );
+    }
+}
+
+void sphere( int count ) {
+    point4 v[4] = {
+        vec4( 0.0, 0.0, 1.0, 1.0 ),
+        vec4( 0.0, 0.942809, -0.33333, 1.0 ),
+        vec4( -0.816497, -0.471405, -0.33333, 1.0 ),
+        vec4( 0.816497, -0.471405, -0.33333, 1.0 )
+    };
+    divide_triangle( v[0], v[1], v[2], count );
+    divide_triangle( v[3], v[2], v[1], count );
+    divide_triangle( v[0], v[3], v[1], count );
+    divide_triangle( v[0], v[2], v[3], count );
+}
+
+// MARK: - Initialization
+
 void init() {
 
-    // Loading data from file
-    ifstream file;
-    file.open("shapeX.offx");
-
-    string input;
-    int edges;
-    file >> input;
-    if (input == "OFFX") {
-        file >> numVerticesOFF >> numTriangles >> edges;
-        vertices = new point4[numVerticesOFF];
-        texture = new point2[numVerticesOFF];
-        normal = new vec3[numVerticesOFF];
-
-        faceIndex = new int[numTriangles*3];
-        faceVertex = new point4[numTriangles*3];
-        faceNormal = new vec3[numTriangles*3];
-        v_coords = new point2[numTriangles*3];
-
-        GLdouble x, y, z;
-        for(int i = 0 ; i < numVerticesOFF ; i++) {
-            file >> x >> y >> z;
-            vertices[i] = point4(x, y, z, 1.0);
-        }
-
-        int v1, v2, v3;
-        for(int j = 0 ; j < numTriangles ; j++) {
-            file >> edges >> v1 >> v2 >> v3;
-
-            faceIndex[(j*3)+0] = v1;
-            faceIndex[(j*3)+1] = v2;
-            faceIndex[(j*3)+2] = v3;
-
-            faceVertex[(j*3)+0] = vertices[v1];
-            faceVertex[(j*3)+1] = vertices[v2];
-            faceVertex[(j*3)+2] = vertices[v3];
-        }
-
-        for(int i = 0 ; i < numVerticesOFF ; i++) {
-            file >> input >> x >> y;
-            texture[i] = point2(x, y);
-        }
-
-        for(int i = 0 ; i < numVerticesOFF ; i++) {
-            file >> input >> x >> y >> z;
-            normal[i] = vec3(x, y, z);
-        }
-
-        for(int j = 0 ; j < numTriangles*3 ; j++) {
-            faceNormal[j] = normal[faceIndex[j]];
-            v_coords[j] = texture[faceIndex[j]];
-        }
-    }
-    file.close();
-
+    program = InitShader("vshader.glsl", "fshader.glsl");
+    glUseProgram(program);
 
     // Create a vertex array object
     GLuint vao;
     glGenVertexArrays(1, &vao);
     glBindVertexArray(vao);
-
+    
+    // MARK: Sphere Init
+    sphere( NumTimesToSubdivide );
+    
     // Create and initialize buffer object
-    GLuint buffer;
-    glGenBuffers(1, &buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, buffer);
+    // Create and initialize a buffer object for sphere
+    GLuint buffer1;
+    glGenBuffers( 1, &buffer1 );
+    glBindBuffer( GL_ARRAY_BUFFER, buffer1 );
+    glBufferData( GL_ARRAY_BUFFER, sizeof(pointsSphere) + sizeof(normals), NULL, GL_STATIC_DRAW );
+    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(pointsSphere), pointsSphere );
+    glBufferSubData( GL_ARRAY_BUFFER, sizeof(pointsSphere), sizeof(normals), normals );
+    
+    // Set up vertex arrays
+    GLuint vPosition = glGetAttribLocation( program, "vPosition" );
+    glEnableVertexAttribArray( vPosition );
+    glVertexAttribPointer( vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0) );
 
-    glBufferData( GL_ARRAY_BUFFER, (sizeof(point4)*3*numTriangles)+(sizeof(vec3)*3*numTriangles)+(sizeof(point2)*3*numTriangles), NULL, GL_STATIC_DRAW );
-    glBufferSubData( GL_ARRAY_BUFFER, 0, sizeof(point4)*3*numTriangles, faceVertex );
-    glBufferSubData( GL_ARRAY_BUFFER, sizeof(point4)*3*numTriangles, sizeof(vec3)*3*numTriangles, faceNormal );
-    glBufferSubData( GL_ARRAY_BUFFER, sizeof(point4)*3*numTriangles+sizeof(vec3)*3*numTriangles, sizeof(point2)*3*numTriangles, v_coords );
-
-
-    program = InitShader("vshader.glsl", "fshader.glsl");
-    glUseProgram(program);
-
-    vPosition = glGetAttribLocation(program, "vPosition");
     vNormal = glGetAttribLocation(program, "vNormal");
     vCoords = glGetAttribLocation(program, "vCoords");
     AmbientProduct = glGetUniformLocation(program, "AmbientProduct");
@@ -171,8 +174,6 @@ void init() {
     DrawingMode = glGetUniformLocation(program, "DRAWING_MODE_GLOBAL");
     Secondary_Mode = glGetUniformLocation(program, "SECONDARY_MODE_GLOBAL");
     
-    glEnableVertexAttribArray(vPosition);
-    glVertexAttribPointer(vPosition, 4, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(0));
     glEnableVertexAttribArray(vNormal);
     glVertexAttribPointer(vNormal, 3, GL_FLOAT, GL_FALSE, 0, BUFFER_OFFSET(sizeof(point4)*3*numTriangles));
     glEnableVertexAttribArray(vCoords);
@@ -202,23 +203,16 @@ void init() {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST_MIPMAP_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
 
-
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
 
     // Default background
-    glClearColor(1.0, 1.0, 1.0, 1.0);
+    glClearColor(1.0, 1.0, 1.0, 1.0);   //white background
    
 }
 
-//----------------------------------------------------------------------------
+// MARK: - Light Movement
 
-// Drawing modes toggle
-// void
-
-//----------------------------------------------------------------------------
-
-// Light Movement;
 void moveLight(int offset, int axis) {
     if (axis == Xaxis) {
         LightPosition1 = RotateX(offset) * LightPosition1;
@@ -238,9 +232,8 @@ void moveLight(int offset, int axis) {
     }
 }
 
-//----------------------------------------------------------------------------
+// MARK: - Display
 
-// This function displays the current object in the animation screen
 void display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -276,93 +269,8 @@ void display() {
     glutSwapBuffers();
 }
 
-//----------------------------------------------------------------------------
+// MARK: - Read PPM File
 
-// Prints the help menu
-void help() {
-    
-    printf("Right click to access popup menu\n");
-    printf("Press i key to go to the initial position\n");
-    printf("Press z or Z key for zoom in and zoom out\n");
-    printf("Press up or down arrow keys for rotation in x-axis\n");
-    printf("Press a or s keys for rotation in y-axis\n");
-    printf("Press left or right arrow keys for rotation in z-axis\n");
-    printf("Press b, g or w for Black, Grey or White background color respectively\n");
-    printf("Press h or H key for help\n");
-    printf("Press q or Q key to exit application\n\n");
-    printf("**************************************************************************************\n");
-}
-
-//----------------------------------------------------------------------------
-
-// Handles the arrow key functionality
-void rotationKeys(int key, int x, int y) {
-    if (key == GLUT_KEY_LEFT) {
-        rotZ += 2;
-        if(LightsMovement == LightMoving) {
-            moveLight(2, Zaxis);
-        }
-    } else if (key == GLUT_KEY_RIGHT) {
-        rotZ -= 2;
-        if(LightsMovement == LightMoving) {
-            moveLight(-2, Zaxis);
-        }
-    } else if (key == GLUT_KEY_UP) {
-        rotX += 2;
-        if(LightsMovement == LightMoving) {
-            moveLight(2, Xaxis);
-        }
-    } else if (key == GLUT_KEY_DOWN) {
-        rotX -= 2;
-        if(LightsMovement == LightMoving) {
-            moveLight(-2, Xaxis);
-        }
-    }
-
-    glutPostRedisplay();
-}
-
-//----------------------------------------------------------------------------
-
-// Handles the keyboard keys functionality
-void keyboard(unsigned char key, int x, int y) {
-    if (key == 'z') {
-        SCALE_FACTOR -= SCALE_FACTOR*0.1;
-    } else if (key == 'Z') {
-        SCALE_FACTOR += SCALE_FACTOR*0.1;
-    } else if (key == 'i') {
-        rotX = 0.0;
-        rotY = 0.0;
-        rotZ = 0.0;
-        SCALE_FACTOR = 1.0;
-    } else if (key == 'b') {
-        glClearColor(0.0, 0.0, 0.0, 1.0);
-    } else if (key == 'w') {
-        glClearColor(1.0, 1.0, 1.0, 1.0);
-    } else if (key == 'g') {
-        glClearColor(0.5, 0.5, 0.5, 1.0);
-    } else if (key == 'h') {
-        help();
-    } else if (key == 'q') {
-        exit(0);
-    } else if (key == 'a') {
-        rotY -= 2;
-        if(LightsMovement == LightMoving) {
-            moveLight(-2, Yaxis);
-        }
-    } else if (key == 's') {
-        rotY += 2;
-        if (LightsMovement == LightMoving) {
-            moveLight(2, Yaxis);
-        }
-    }
-
-    glutPostRedisplay();
-}
-
-//----------------------------------------------------------------------------
-
-// Read the texture file provided as texture.ppm in input_files
 void readPPM(const char* ppmFile, GLubyte* image) {
     /*FILE *fd;
     int k, n, m, t;
@@ -441,24 +349,41 @@ void readPPM(const char* ppmFile, GLubyte* image) {
     }
 }
 
-//----------------------------------------------------------------------------
+// MARK: - Reshape
 
-// Callbacks for main menu
-void menuMain(int id) {
+void reshape( int width, int height ) {
+    WINDOW_WIDTH = width;
+    WINDOW_HEIGHT = height;
+    glViewport(0, 0, width, height);
+    mat4 projection;
+    GLfloat aspect = GLfloat(width)/height;
+    if(PROJECTION_TYPE_GLOBAL != OrthographicProjectionMode) {
+        projection = Perspective(45, aspect, Zclose, Zaway);
+    } else {
+        if(width <= height) {
+            projection = Ortho(xA, yA, zA/aspect, xB/aspect, yB, zB);
+        } else {
+            projection = Ortho(xA*aspect, yA*aspect, zA, xB, yB, zB);
+        }
+    }
+
+    glUniformMatrix4fv(Projection, 1, GL_TRUE, projection);
 }
 
-//----------------------------------------------------------------------------
+// MARK: - Menu
 
-// Toggles the material type between Metallic and Plastic of the object
-void materialType(int id) {
-    material_shininess = id;
+void mainMenu(int n) {
+}
+
+void materialMenu(int n) {
+    material_shininess = n;
     glUniform1f( Shininess, material_shininess );
 
-    if (id == Metallic) {
+    if (n == Metallic) {
         material_ambient = color4( 0.1, 0.1, 0.1, 1.0 );
         material_diffuse = color4( 0.4, 0.4, 0.4, 1.0 );
         material_specular = color4( 0.7, 0.7, 0.7, 1.0 );
-    } else if (id == Plastic) {
+    } else if (n == Plastic) {
         material_ambient = color4( 0.01, 0.01, 0.01, 1.0 );
         material_diffuse = color4( 0.4, 0.4, 0.4, 1.0 );
         material_specular = color4( 0.5, 0.5, 0.5, 1.0 );
@@ -475,29 +400,20 @@ void materialType(int id) {
     glutPostRedisplay();
 }
 
-//----------------------------------------------------------------------------
-
-// Toggles the material type between Phong Reflection and Modified Phong Reflection
-void phongShadingToggle(int id) {
-    DRAWING_MODE_GLOBAL = id;
+void phongShadingToggle(int n) {
+    DRAWING_MODE_GLOBAL = n;
     glUniform1i(DrawingMode, DRAWING_MODE_GLOBAL);
     glutPostRedisplay();
 }
 
-//----------------------------------------------------------------------------
-
-// Toggles the shading option between Phong Shading and Gouraud Shading
-void shadingToggle(int id) {
-    DRAWING_MODE_GLOBAL = id;
+void shadingToggle(int n) {
+    DRAWING_MODE_GLOBAL = n;
     glUniform1i(DrawingMode, DRAWING_MODE_GLOBAL);
     glutPostRedisplay();
 }
 
-//----------------------------------------------------------------------------
-
-// Toggles the projection type between Orthographic and Perspective
-void projectionType(int id) {
-    PROJECTION_TYPE_GLOBAL = id;
+void projectionType(int n) {
+    PROJECTION_TYPE_GLOBAL = n;
 
     mat4 projection;
     GLfloat aspect = GLfloat(WINDOW_WIDTH)/WINDOW_HEIGHT;
@@ -521,24 +437,18 @@ void projectionType(int id) {
     glutPostRedisplay();
 }
 
-//----------------------------------------------------------------------------
-
-// Toggles the light being fixed or moving with object
-void lightProperty(int id) {
-    LightsMovement = id;
+void lightProperty(int n) {
+    LightsMovement = n;
 }
 
-//----------------------------------------------------------------------------
-
-// Toggles light on or off in point and directional light
-void lightSwitch(int id) {
-    if (id == DirectionalLightOn) {
+void lightSwitch(int n) {
+    if (n == DirectionalLightOn) {
         LightIsOn2 = 1;
-    } else if (id == DirectionalLightOff) {
+    } else if (n == DirectionalLightOff) {
         LightIsOn2 = 0;
-    } else if (id == PointLightOn) {
+    } else if (n == PointLightOn) {
         LightIsOn1 = 1;
-    } else if (id == PointLightOff) {
+    } else if (n == PointLightOff) {
         LightIsOn1 = 0;
     }
 
@@ -547,43 +457,113 @@ void lightSwitch(int id) {
     glutPostRedisplay();
 }
 
-//----------------------------------------------------------------------------
-
-// Selects between Wireframe, Shading and Texture
-void drawingMode(int id) {
-    DRAWING_MODE_GLOBAL = id;
+void drawingMode(int n) {
+    DRAWING_MODE_GLOBAL = n;
     glUniform1i(DrawingMode, DRAWING_MODE_GLOBAL);
     glutPostRedisplay();
 }
 
-//----------------------------------------------------------------------------
+void menu() {
+    
+}
+// MARK: - Rotation Keys
 
-// Function invoked when the size of the window is changed
-// This allows the shape to keep its aspect ratio.
-void reshape( int width, int height ) {
-    WINDOW_WIDTH = width;
-    WINDOW_HEIGHT = height;
-    glViewport(0, 0, width, height);
-    mat4 projection;
-    GLfloat aspect = GLfloat(width)/height;
-    if(PROJECTION_TYPE_GLOBAL != OrthographicProjectionMode) {
-        projection = Perspective(45, aspect, Zclose, Zaway);
-    } else {
-        if(width <= height) {
-            projection = Ortho(xA, yA, zA/aspect, xB/aspect, yB, zB);
-        } else {
-            projection = Ortho(xA*aspect, yA*aspect, zA, xB, yB, zB);
+void rotationKeys(int key, int x, int y) {
+    if (key == GLUT_KEY_LEFT) {
+        rotZ += 2;
+        if(LightsMovement == LightMoving) {
+            moveLight(2, Zaxis);
+        }
+    } else if (key == GLUT_KEY_RIGHT) {
+        rotZ -= 2;
+        if(LightsMovement == LightMoving) {
+            moveLight(-2, Zaxis);
+        }
+    } else if (key == GLUT_KEY_UP) {
+        rotX += 2;
+        if(LightsMovement == LightMoving) {
+            moveLight(2, Xaxis);
+        }
+    } else if (key == GLUT_KEY_DOWN) {
+        rotX -= 2;
+        if(LightsMovement == LightMoving) {
+            moveLight(-2, Xaxis);
         }
     }
 
-    glUniformMatrix4fv(Projection, 1, GL_TRUE, projection);
+    glutPostRedisplay();
 }
 
+//MARK: - Keyboard
 
-//----------------------------------------------------------------------------
+void keyboard(unsigned char key, int x, int y) {
+    if (key == 'z') {
+        SCALE_FACTOR -= SCALE_FACTOR*0.1;
+    } else if (key == 'Z') {
+        SCALE_FACTOR += SCALE_FACTOR*0.1;
+    } else if (key == 'i') {
+        rotX = 0.0;
+        rotY = 0.0;
+        rotZ = 0.0;
+        SCALE_FACTOR = 1.0;
+    } else if (key == 'b') {
+        glClearColor(0.0, 0.0, 0.0, 1.0);
+    } else if (key == 'w') {
+        glClearColor(1.0, 1.0, 1.0, 1.0);
+    } else if (key == 'g') {
+        glClearColor(0.5, 0.5, 0.5, 1.0);
+    } else if (key == 'h') {
+        printf("Right click to access popup menu\n");
+        printf("Press i key to go to the initial position\n");
+        printf("Press z or Z key for zoom in and zoom out\n");
+        printf("Press up or down arrow keys for rotation in x-axis\n");
+        printf("Press a or s keys for rotation in y-axis\n");
+        printf("Press left or right arrow keys for rotation in z-axis\n");
+        printf("Press b, g or w for Black, Grey or White background color respectively\n");
+        printf("Press h or H key for help\n");
+        printf("Press q or Q key to exit application\n\n");
+    } else if (key == 'q') {
+        exit(0);
+    } else if (key == 'a') {
+        rotY -= 2;
+        if(LightsMovement == LightMoving) {
+            moveLight(-2, Yaxis);
+        }
+    } else if (key == 's') {
+        rotY += 2;
+        if (LightsMovement == LightMoving) {
+            moveLight(2, Yaxis);
+        }
+    }
 
-// Call-backs for the RightClick Menu
-void rightClick() {
+    glutPostRedisplay();
+}
+
+// MARK: - Main
+
+int main(int agrc, char** agrv) {
+    glutInit(&agrc, agrv);
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH | GLUT_3_2_CORE_PROFILE);
+    glutInitWindowSize(900, 720);
+    glutInitWindowPosition( 100, 100 );
+    glutCreateWindow("COMP410 Assignment 3");
+
+    #ifdef __APPLE__
+    #else // non-Mac OS X operating systems
+    #   glewExperimental = GL_TRUE;
+    #   glewInit();
+    #endif
+
+   //readPPM();
+    init();
+    help();
+    
+    glutDisplayFunc( display );
+    glutKeyboardFunc( keyboard );
+    glutSpecialFunc( rotationKeys );
+    glutReshapeFunc( reshape );
+    
+    // Menu
     menuProjectionMode = glutCreateMenu(projectionType);
     glutAddMenuEntry("Orthographic" , OrthographicProjectionMode);
     glutAddMenuEntry("Perspective" , PerspectiveProjectionMode);
@@ -592,7 +572,7 @@ void rightClick() {
     glutAddMenuEntry("Regular Phong" , Phong);
     glutAddMenuEntry("Modified Phong" , ModifiedPhong);
 
-    menuMaterialType = glutCreateMenu(materialType);
+    menuMaterialType = glutCreateMenu(materialMenu);
     glutAddMenuEntry("Metallic" , Metallic);
     glutAddMenuEntry("Plastic" , Plastic);
 
@@ -615,42 +595,14 @@ void rightClick() {
     glutAddMenuEntry("Directional Off" , DirectionalLightOff);
     glutAddMenuEntry("Point Off" , PointLightOff);
 
-
-    glutCreateMenu(menuMain);
+    glutCreateMenu(mainMenu);
     glutAddSubMenu("Projection Toggle", menuProjectionMode);
     glutAddSubMenu("Drawing Mode Toggle", menuDrawingMode);
     glutAddSubMenu("Light Movement", menuLightMovement);
     glutAddSubMenu("Light Toggle", menuLightSwitch);
     glutAddSubMenu("Material Toggle", menuMaterialType);
+    
     glutAttachMenu(GLUT_RIGHT_BUTTON);
-}
-
-//-----------------------------------------------------------------------
-// main program
-//-----------------------------------------------------------------------
-
-int main(int agrc, char** agrv) {
-    readPPM();
-    help();
-  
-    glutInit(&agrc, agrv);
-    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH | GLUT_3_2_CORE_PROFILE);
-    glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
-    glutCreateWindow("COMP410 Assignment 3");
-
-    #ifdef __APPLE__
-    #else // non-Mac OS X operating systems
-    #   glewExperimental = GL_TRUE;
-    #   glewInit();
-    #endif
-
-    rightClick();
-    init();
-
-    glutDisplayFunc(display);
-    glutKeyboardFunc(keyboard);
-    glutSpecialFunc(rotationKeys);
-    glutReshapeFunc(reshape);
     
     glutMainLoop();
     return 0;
